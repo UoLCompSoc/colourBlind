@@ -1,5 +1,6 @@
 package com.sgtcodfish.colourBlind;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
@@ -18,21 +19,10 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void create() {
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
+		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-		camera = new OrthographicCamera(1, h / w);
-		// batch = new SpriteBatch();
-		//
-		// texture = new Texture(Gdx.files.internal("data/libgdx.png"));
-		// texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-		//
-		// TextureRegion region = new TextureRegion(texture, 0, 0, 512, 275);
-		//
-		// sprite = new Sprite(region);
-		// sprite.setSize(0.9f, 0.9f * sprite.getHeight() / sprite.getWidth());
-		// sprite.setOrigin(sprite.getWidth()/2, sprite.getHeight()/2);
-		// sprite.setPosition(-sprite.getWidth()/2, -sprite.getHeight()/2);
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 15, 10);
 
 		player = new Player();
 		level = new Level("level1.tmx");
@@ -57,6 +47,8 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.position.x = player.position.x;
 		camera.position.y = player.position.y;
 		camera.update();
+
+		level.render(camera);
 
 	}
 

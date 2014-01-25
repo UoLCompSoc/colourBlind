@@ -3,6 +3,7 @@ package com.sgtcodfish.colourBlind;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
@@ -34,7 +35,15 @@ public class Level {
 		Gdx.app.debug("LEVEL_LOAD", "Level file \"" + levelFileName
 				+ "\" exists: " + levelHandle.exists());
 		tiledMap = new TmxMapLoader().load(fullFileName);
-		renderer = new OrthogonalTiledMapRenderer(tiledMap);
+		renderer = new OrthogonalTiledMapRenderer(tiledMap, 1.0f / 32.0f);
+
+		MapLayers layers = tiledMap.getLayers();
+		Gdx.app.debug("LEVEL_LOAD", "Level layers: " + layers.getCount());
+
+		for (int i = 0; i < layers.getCount(); i++) {
+			Gdx.app.debug("LEVEL_LOAD", "Layer " + i + " name: "
+					+ layers.get(i).getName());
+		}
 	}
 
 	public void render(OrthographicCamera camera) {
@@ -60,7 +69,7 @@ public class Level {
 		Array<Rectangle> tiles = new Array<Rectangle>();
 
 		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(
-				1);
+				"level");
 
 		int foundCount = 0;
 
