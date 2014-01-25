@@ -21,6 +21,9 @@ public class Level {
 	public OrthogonalTiledMapRenderer	renderer	= null;
 	private TiledMap					tiledMap	= null;
 
+	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
+			TILE_WIDTH, TILE_HEIGHT;
+
 	/**
 	 * Creates a new level, loaded the tmx file called "levelFileName" in the
 	 * "data/maps" directory.
@@ -44,6 +47,12 @@ public class Level {
 			Gdx.app.debug("LEVEL_LOAD", "Layer " + i + " name: "
 					+ layers.get(i).getName());
 		}
+
+		TiledMapTileLayer tml = (TiledMapTileLayer) tiledMap.getLayers().get(0);
+		HEIGHT_IN_TILES = tml.getHeight();
+		WIDTH_IN_TILES = tml.getWidth();
+		TILE_WIDTH = (int) tml.getTileWidth();
+		TILE_HEIGHT = (int) tml.getTileHeight();
 	}
 
 	public void render(OrthographicCamera camera) {
@@ -65,7 +74,7 @@ public class Level {
 	 *            The ending y tile-coordinate.
 	 * @return An array of tiles, or null if no rects were found.
 	 */
-	public Array<Rectangle> getTiles(int sx, int sy, int ex, int ey) {
+	public Array<Rectangle> getTilesAsRectArray(int sx, int sy, int ex, int ey) {
 		Array<Rectangle> tiles = new Array<Rectangle>();
 
 		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(

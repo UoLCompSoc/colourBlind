@@ -9,9 +9,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 
 /**
  * Holds the player.
@@ -23,15 +23,15 @@ public class Player {
 		STANDING, RUNNING, JUMPING
 	}
 
-	public static final float	JUMP_VELOCITY			= 1.0f;
+	public static final float	JUMP_VELOCITY			= 4.0f;
 	public static final float	RUN_VELOCITY			= 1.0f;
-	public static final float	GRAVITY					= -2.0f;
+	public static final float	GRAVITY					= -0.5f;
 
 	private Texture				texture					= null;
 	private int					PLAYER_TEXTURE_WIDTH	= 64;
 	private int					PLAYER_TEXTURE_HEIGHT	= 128;
 
-	public static final Vector2	INITIAL_POSITION		= new Vector2(3, 1);
+	public static final Vector2	INITIAL_POSITION		= new Vector2(3, 2);
 
 	private float				PLAYER_WIDTH			= 0;
 	private float				PLAYER_HEIGHT			= 0;
@@ -46,6 +46,7 @@ public class Player {
 	public Animation			jump					= null;
 
 	private boolean				facingLeft				= false;
+	private boolean				isGrounded				= true;
 
 	public Player() {
 		FileHandle playerImage = Gdx.files
@@ -61,8 +62,8 @@ public class Player {
 		run = new Animation(0.2f, regions[0], regions[1], regions[2]);
 		facingLeft = false;
 
-		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / 32.0f));
-		PLAYER_HEIGHT = (PLAYER_TEXTURE_HEIGHT * (1.0f / 32.0f));
+		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / 64.0f));
+		PLAYER_HEIGHT = (PLAYER_TEXTURE_HEIGHT * (1.0f / 64.0f));
 
 		position.set(Player.INITIAL_POSITION);
 	}
@@ -74,86 +75,92 @@ public class Player {
 	 *            The amount of time since the last frame
 	 */
 	public void update(Level level, float deltaTime) {
-		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
-			if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-				position.set(Player.INITIAL_POSITION);
-				return;
-			}
-		}
-
 		if (deltaTime == 0.0f) {
 			return;
 		}
 
-		if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)) {
+		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
+			if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
+				position.set(Player.INITIAL_POSITION);
+				velocity.set(0.0f, 0.0f);
+				return;
+			}
+
+			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
+				Gdx.app.debug("PLAYER_COORDS", "(X,Y)=(" + position.x + ", "
+						+ position.y + ")");
+			}
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.SPACE)) {
+			if (isGrounded) {
+				velocity.y += JUMP_VELOCITY;
+				setState(PlayerState.JUMPING);
+				isGrounded = false;
+			}
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) {
 			velocity.x = -RUN_VELOCITY;
 
-			if (getState() != PlayerState.JUMPING) {
+			if (isGrounded) {
 				setState(PlayerState.RUNNING);
 			}
 
 			facingLeft = true;
-		} else if (Gdx.input.isKeyPressed(Keys.D)
-				|| Gdx.input.isKeyPressed(Keys.RIGHT)) {
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.RIGHT)
+				|| Gdx.input.isKeyPressed(Keys.D)) {
 			velocity.x = RUN_VELOCITY;
 
-			if (getState() != PlayerState.JUMPING) {
+			if (isGrounded) {
 				setState(PlayerState.RUNNING);
 			}
 
 			facingLeft = false;
-		} else if (getState() != PlayerState.JUMPING) {
-			setState(PlayerState.STANDING);
-			velocity.x = 0.0f;
 		}
-		// else {
-		// // we must be jumping so set to stand if we collide with floor
-		// if (isCollidingY(level)) {
-		// if (velocity.x > 0.0f || velocity.y < 0.0f) {
-		// setState(PlayerState.RUNNING);
-		// } else {
-		// setState(PlayerState.STANDING);
-		// }
-		// }
-		// }
 
-		if (getState() != PlayerState.JUMPING) {
-			if (Gdx.input.isKeyPressed(Keys.SPACE)) {
-				velocity.y = JUMP_VELOCITY;
-				setState(PlayerState.JUMPING);
+		velocity.y += GRAVITY;
+
+		if (Math.abs(velocity.x) < 1.0f) {
+			velocity.x = 0.0f;
+
+			if (isGrounded) {
+				setState(PlayerState.STANDING);
 			}
+		}
+
+		// handleYCollision(level);
+
+		Vector2 ptCoords = new Vector2(position);
+		ptCoords.add(velocity);
+		// Gdx.app.debug("COORDS", "(X, Y)=(" + ptCoords.x + ", " + ptCoords.y
+		// + ")");
+
+		if (ptCoords.y < 1) {
+			ptCoords.y = 1;
+		}
+
+		if (ptCoords.x < 0) {
+			ptCoords.x = 0;
+		}
+
+		TiledMapTileLayer layer = (TiledMapTileLayer) level.renderer.getMap()
+				.getLayers().get("level");
+
+		// check for y collisions
+		Cell cell = layer.getCell((int) ptCoords.x, (int) ptCoords.y);
+		if (cell != null) {
+			// there's something there
+			if (velocity.y < 0.0f) {
+				isGrounded = true;
+			}
+			velocity.y = 0;
 		}
 
 		position.add(velocity);
-		velocity.y += GRAVITY;
-
-		if (isCollidingY(level)) {
-			// if we're colliding and we're travelling down, change state
-			if (velocity.y < 0.0f) {
-				if (velocity.x > 0.0f || velocity.x < 0.0f) {
-					setState(PlayerState.RUNNING);
-				} else {
-					setState(PlayerState.STANDING);
-				}
-			}
-
-			// whatever direction we're travelling, we want to set velocity to 0
-			velocity.y = 0.0f;
-		}
-
-		if (isCollidingX(level)) {
-			if (velocity.x < 0) {
-				// travelling left
-				velocity.x = 0;
-			} else {
-				// travelling right
-				velocity.x = 0;
-			}
-		}
-
-		if (position.y < 1.0f) {
-			position.y = 1.0f;
-		}
+		velocity.x *= (RUN_VELOCITY / 10);
 	}
 
 	public void render(Level level) {
@@ -174,7 +181,7 @@ public class Player {
 		} else if (currState == PlayerState.STANDING) {
 			if (!facingLeft) {
 				batch.draw(stand.getKeyFrame(0), position.x, position.y,
-						(float) -PLAYER_WIDTH, (float) PLAYER_HEIGHT);
+						(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
 			} else {
 				batch.draw(stand.getKeyFrame(0), position.x, position.y,
 						(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
@@ -189,71 +196,84 @@ public class Player {
 		texture.dispose();
 	}
 
-	public boolean isCollidingX(Level level) {
-		Rectangle playerRect = new Rectangle();
-		playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-
-		int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
-
-		startYTile = (int) position.y;
-		endYTile = (int) (position.y + velocity.y);
-
-		if (velocity.x > 0.0f) {
-			// are we colliding right?
-			startXTile = endXTile = (int) (position.x + PLAYER_WIDTH + velocity.x);
-		} else {
-			startXTile = endXTile = (int) (position.x + velocity.x);
-		}
-
-		Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
-				endXTile, endYTile);
-
-		playerRect.x += velocity.x;
-
-		if (tiles != null) {
-			Gdx.app.debug("COLLISON_Y", "Y tiles found, size = " + tiles.size);
-			for (Rectangle tile : tiles) {
-				if (playerRect.overlaps(tile)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	public boolean isCollidingY(Level level) {
-		Rectangle playerRect = new Rectangle();
-		playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-
-		int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
-
-		startXTile = (int) position.x;
-		endXTile = (int) (position.x + velocity.x);
-
-		if (velocity.y > 0.0f) {
-			// are we colliding above
-			startYTile = endYTile = (int) (position.y + PLAYER_TEXTURE_HEIGHT + velocity.y);
-		} else {
-			startYTile = endYTile = (int) (position.y + velocity.y);
-		}
-
-		Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
-				endXTile, endYTile);
-
-		playerRect.y += velocity.y;
-		if (tiles != null) {
-			Gdx.app.debug("COLLISON_Y", "Y tiles found, size = " + tiles.size);
-
-			for (Rectangle tile : tiles) {
-				if (playerRect.overlaps(tile)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
+	// public boolean isCollidingX(Level level) {
+	// Rectangle playerRect = new Rectangle();
+	// playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+	//
+	// int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
+	//
+	// startYTile = (int) position.y;
+	// endYTile = (int) (position.y + velocity.y);
+	//
+	// if (velocity.x > 0.0f) {
+	// // are we colliding right?
+	// startXTile = endXTile = (int) (position.x + PLAYER_WIDTH + velocity.x);
+	// } else {
+	// startXTile = endXTile = (int) (position.x + velocity.x);
+	// }
+	//
+	// Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
+	// endXTile, endYTile);
+	//
+	// playerRect.x += velocity.x;
+	//
+	// if (tiles != null) {
+	// Gdx.app.debug("COLLISON_Y", "Y tiles found, size = " + tiles.size);
+	// for (Rectangle tile : tiles) {
+	// if (playerRect.overlaps(tile)) {
+	// return true;
+	// }
+	// }
+	// }
+	//
+	// return false;
+	// }
+	//
+	// public boolean handleYCollision(Level level) {
+	// Rectangle playerRect = new Rectangle();
+	// playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+	//
+	// int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
+	//
+	// startXTile = (int) position.x;
+	// endXTile = (int) (position.x + velocity.x);
+	//
+	// if (endXTile < 0) {
+	// endXTile = 0;
+	// }
+	//
+	// if (startXTile < 0) {
+	// startXTile = 0;
+	// }
+	//
+	// if (velocity.y > 0.0f) {
+	// // are we colliding above
+	// startYTile = endYTile = (int) (position.y + PLAYER_HEIGHT + velocity.y);
+	// } else {
+	// startYTile = endYTile = (int) (position.y + velocity.y);
+	// }
+	//
+	// Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
+	// endXTile, endYTile);
+	//
+	// playerRect.y += velocity.y;
+	//
+	// if (tiles != null) {
+	// for (Rectangle tile : tiles) {
+	// if (playerRect.overlaps(tile)) {
+	// if (velocity.y > 0.0f) {
+	// // position.y = tile.y - PLAYER_HEIGHT;
+	// } else {
+	// // position.y = tile.y + PLAYER_HEIGHT;
+	// isGrounded = true;
+	// }
+	// return true;
+	// }
+	// }
+	// }
+	//
+	// return false;
+	// }
 
 	public void setState(PlayerState ns) {
 		state = ns;
