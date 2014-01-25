@@ -4,7 +4,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -33,8 +32,10 @@ public class Player {
 
 	public static final Vector2	INITIAL_POSITION		= new Vector2(3, 2);
 
-	private float				PLAYER_WIDTH			= 0;
-	private float				PLAYER_HEIGHT			= 0;
+	public static final float	PLAYER_SCALE_FACTOR		= 55.0f;
+
+	private float				PLAYER_WIDTH			= 0f;
+	private float				PLAYER_HEIGHT			= 0f;
 
 	private PlayerState			state					= PlayerState.STANDING;
 	private float				stateTime				= 0.0f;
@@ -64,8 +65,8 @@ public class Player {
 		run.setPlayMode(Animation.LOOP_PINGPONG);
 		facingLeft = false;
 
-		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / 64.0f));
-		PLAYER_HEIGHT = (PLAYER_TEXTURE_HEIGHT * (1.0f / 64.0f));
+		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / PLAYER_SCALE_FACTOR));
+		PLAYER_HEIGHT = (PLAYER_TEXTURE_HEIGHT * (1.0f / PLAYER_SCALE_FACTOR));
 
 		position.set(Player.INITIAL_POSITION);
 	}
@@ -179,12 +180,7 @@ public class Player {
 		velocity.x *= (RUN_VELOCITY / 10);
 	}
 
-	public void render(Level level) {
-		SpriteBatch batch = level.renderer.getSpriteBatch();
-		batch.begin();
-		Color startColor = batch.getColor();
-		// batch.setBlendFunction(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-		// batch.setColor(Color.RED);
+	public void render(SpriteBatch batch) {
 		PlayerState currState = getState();
 		TextureRegion frame = null;
 
@@ -205,9 +201,6 @@ public class Player {
 					(float) -PLAYER_WIDTH, (float) PLAYER_HEIGHT);
 
 		}
-
-		batch.setColor(startColor);
-		batch.end();
 	}
 
 	public void dispose() {
@@ -228,5 +221,13 @@ public class Player {
 
 	public float getY() {
 		return position.y;
+	}
+
+	public float getPlayerWidth() {
+		return PLAYER_WIDTH;
+	}
+
+	public float getPlayerHeight() {
+		return PLAYER_HEIGHT;
 	}
 }
