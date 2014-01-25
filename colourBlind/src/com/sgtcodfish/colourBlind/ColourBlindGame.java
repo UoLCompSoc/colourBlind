@@ -36,27 +36,19 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClearColor(1, 0, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
 
 		player.update(level, deltaTime);
-		player.render(level);
 
 		camera.position.x = player.position.x;
 		camera.position.y = player.position.y;
 		camera.update();
 
-		// if (camera.position.dst(new Vector3(player.getX(), player.getY(),
-		// camera.position.z)) > 2.5f) {
-		// camera.position
-		// .set(player.getX(), player.getY(), camera.position.z);
-		// camera.update();
-		// }
-
 		level.render(camera);
-
+		player.render(level);
 	}
 
 	@Override

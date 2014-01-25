@@ -37,6 +37,7 @@ public class Player {
 	private float				PLAYER_HEIGHT			= 0;
 
 	private PlayerState			state					= PlayerState.STANDING;
+	private float				stateTime				= 0.0f;
 
 	public Vector2				position				= new Vector2();
 	public Vector2				velocity				= new Vector2();
@@ -59,7 +60,8 @@ public class Player {
 				PLAYER_TEXTURE_WIDTH, PLAYER_TEXTURE_HEIGHT)[0];
 		jump = new Animation(0, regions[3]);
 		stand = new Animation(0, regions[0]);
-		run = new Animation(0.2f, regions[0], regions[1], regions[2]);
+		run = new Animation(0.2f, regions[1], regions[2]);
+		run.setPlayMode(Animation.LOOP_PINGPONG);
 		facingLeft = false;
 
 		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / 64.0f));
@@ -78,6 +80,8 @@ public class Player {
 		if (deltaTime == 0.0f) {
 			return;
 		}
+
+		stateTime += deltaTime;
 
 		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
 			if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
@@ -182,22 +186,24 @@ public class Player {
 		// batch.setBlendFunction(GL11.GL_SRC_COLOR, GL11.GL_ONE);
 		// batch.setColor(Color.RED);
 		PlayerState currState = getState();
+		TextureRegion frame = null;
 
 		if (currState == PlayerState.JUMPING) {
-			batch.draw(jump.getKeyFrame(0), position.x, position.y,
-					(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
+			frame = jump.getKeyFrame(stateTime);
 		} else if (currState == PlayerState.RUNNING) {
-			// TODO: FIXME for running animation
-			batch.draw(stand.getKeyFrame(0), position.x, position.y,
-					(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
+			frame = run.getKeyFrame(stateTime);
 		} else if (currState == PlayerState.STANDING) {
-			if (!facingLeft) {
-				batch.draw(stand.getKeyFrame(0), position.x, position.y,
-						(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
-			} else {
-				batch.draw(stand.getKeyFrame(0), position.x, position.y,
-						(float) PLAYER_WIDTH, (float) PLAYER_HEIGHT);
-			}
+			frame = stand.getKeyFrame(stateTime);
+		}
+
+		if (!facingLeft) {
+			batch.draw(frame, position.x, position.y, (float) PLAYER_WIDTH,
+					(float) PLAYER_HEIGHT);
+
+		} else {
+			batch.draw(frame, position.x + PLAYER_WIDTH, position.y,
+					(float) -PLAYER_WIDTH, (float) PLAYER_HEIGHT);
+
 		}
 
 		batch.setColor(startColor);
