@@ -48,6 +48,13 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.position.y = player.position.y;
 		camera.update();
 
+		// if (camera.position.dst(new Vector3(player.getX(), player.getY(),
+		// camera.position.z)) > 2.5f) {
+		// camera.position
+		// .set(player.getX(), player.getY(), camera.position.z);
+		// camera.update();
+		// }
+
 		level.render(camera);
 
 	}

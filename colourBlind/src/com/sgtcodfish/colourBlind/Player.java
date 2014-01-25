@@ -23,9 +23,9 @@ public class Player {
 		STANDING, RUNNING, JUMPING
 	}
 
-	public static final float	JUMP_VELOCITY			= 4.0f;
-	public static final float	RUN_VELOCITY			= 1.0f;
-	public static final float	GRAVITY					= -0.5f;
+	public static final float	JUMP_VELOCITY			= 0.70f;
+	public static final float	RUN_VELOCITY			= 0.25f;
+	public static final float	GRAVITY					= -0.05f;
 
 	private Texture				texture					= null;
 	private int					PLAYER_TEXTURE_WIDTH	= 64;
@@ -123,7 +123,7 @@ public class Player {
 
 		velocity.y += GRAVITY;
 
-		if (Math.abs(velocity.x) < 1.0f) {
+		if (Math.abs(velocity.x) < 0.1f) {
 			velocity.x = 0.0f;
 
 			if (isGrounded) {
@@ -131,15 +131,11 @@ public class Player {
 			}
 		}
 
-		// handleYCollision(level);
-
 		Vector2 ptCoords = new Vector2(position);
 		ptCoords.add(velocity);
-		// Gdx.app.debug("COORDS", "(X, Y)=(" + ptCoords.x + ", " + ptCoords.y
-		// + ")");
 
-		if (ptCoords.y < 1) {
-			ptCoords.y = 1;
+		if (ptCoords.y < 0) {
+			ptCoords.y = 0;
 		}
 
 		if (ptCoords.x < 0) {
@@ -149,14 +145,30 @@ public class Player {
 		TiledMapTileLayer layer = (TiledMapTileLayer) level.renderer.getMap()
 				.getLayers().get("level");
 
+		if (velocity.y > 0.0f) {
+			ptCoords.y += PLAYER_HEIGHT;
+		}
+
+		if (velocity.x > 0.0f) {
+			ptCoords.x += PLAYER_WIDTH;
+		}
+
 		// check for y collisions
-		Cell cell = layer.getCell((int) ptCoords.x, (int) ptCoords.y);
+		Cell cell = layer.getCell((int) position.x, (int) ptCoords.y);
+
 		if (cell != null) {
 			// there's something there
 			if (velocity.y < 0.0f) {
 				isGrounded = true;
 			}
+
 			velocity.y = 0;
+		}
+
+		cell = layer.getCell((int) ptCoords.x, (int) position.y);
+
+		if (cell != null) {
+			velocity.x = 0;
 		}
 
 		position.add(velocity);
@@ -196,90 +208,19 @@ public class Player {
 		texture.dispose();
 	}
 
-	// public boolean isCollidingX(Level level) {
-	// Rectangle playerRect = new Rectangle();
-	// playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-	//
-	// int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
-	//
-	// startYTile = (int) position.y;
-	// endYTile = (int) (position.y + velocity.y);
-	//
-	// if (velocity.x > 0.0f) {
-	// // are we colliding right?
-	// startXTile = endXTile = (int) (position.x + PLAYER_WIDTH + velocity.x);
-	// } else {
-	// startXTile = endXTile = (int) (position.x + velocity.x);
-	// }
-	//
-	// Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
-	// endXTile, endYTile);
-	//
-	// playerRect.x += velocity.x;
-	//
-	// if (tiles != null) {
-	// Gdx.app.debug("COLLISON_Y", "Y tiles found, size = " + tiles.size);
-	// for (Rectangle tile : tiles) {
-	// if (playerRect.overlaps(tile)) {
-	// return true;
-	// }
-	// }
-	// }
-	//
-	// return false;
-	// }
-	//
-	// public boolean handleYCollision(Level level) {
-	// Rectangle playerRect = new Rectangle();
-	// playerRect.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-	//
-	// int startXTile = 0, startYTile = 0, endXTile = 0, endYTile = 0;
-	//
-	// startXTile = (int) position.x;
-	// endXTile = (int) (position.x + velocity.x);
-	//
-	// if (endXTile < 0) {
-	// endXTile = 0;
-	// }
-	//
-	// if (startXTile < 0) {
-	// startXTile = 0;
-	// }
-	//
-	// if (velocity.y > 0.0f) {
-	// // are we colliding above
-	// startYTile = endYTile = (int) (position.y + PLAYER_HEIGHT + velocity.y);
-	// } else {
-	// startYTile = endYTile = (int) (position.y + velocity.y);
-	// }
-	//
-	// Array<Rectangle> tiles = level.getTiles(startXTile, startYTile,
-	// endXTile, endYTile);
-	//
-	// playerRect.y += velocity.y;
-	//
-	// if (tiles != null) {
-	// for (Rectangle tile : tiles) {
-	// if (playerRect.overlaps(tile)) {
-	// if (velocity.y > 0.0f) {
-	// // position.y = tile.y - PLAYER_HEIGHT;
-	// } else {
-	// // position.y = tile.y + PLAYER_HEIGHT;
-	// isGrounded = true;
-	// }
-	// return true;
-	// }
-	// }
-	// }
-	//
-	// return false;
-	// }
-
 	public void setState(PlayerState ns) {
 		state = ns;
 	}
 
 	public PlayerState getState() {
 		return state;
+	}
+
+	public float getX() {
+		return position.x;
+	}
+
+	public float getY() {
+		return position.y;
 	}
 }

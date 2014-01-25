@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="20" height="15" tilewidth="32" tileheight="32">
- <tileset firstgid="1" name="tiles" tilewidth="32" tileheight="32">
-  <image source="../TileSet.png" width="128" height="256"/>
+ <tileset firstgid="1" name="cbtiles" tilewidth="32" tileheight="32">
+  <image source="../TileSet.png" trans="ffffff" width="128" height="256"/>
  </tileset>
- <layer name="level" width="20" height="15">
-  <data encoding="base64" compression="zlib">
-   eJxjZGBgYKISZgZiViBmoxJmH8HmyQKxHBpWGETuGzUPgbHFFbb4Gi7+JcU8TiDmohLmBmIAzxcIQw==
-  </data>
- </layer>
  <layer name="bg" width="20" height="15">
   <data encoding="base64" compression="zlib">
    eJxjYBgFo2AUjIKhAQAEsAAB
+  </data>
+ </layer>
+ <layer name="platforms" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIKhAQAEsAAB
+  </data>
+ </layer>
+ <layer name="level" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgYKISZgZiVgbqAfZBap4sEMtR0TwYINU8mDtgWJ5C8wgBWpuH7h98fhsI99HbvOEQv5xAzEUlzA3EAFqtA+Q=
   </data>
  </layer>
 </map>
