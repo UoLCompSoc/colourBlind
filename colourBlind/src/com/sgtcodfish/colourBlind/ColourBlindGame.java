@@ -27,7 +27,7 @@ public class ColourBlindGame implements ApplicationListener {
 	private Level				level				= null;
 	private OrthographicCamera	camera				= null;
 
-	public static final int		LIGHT_SIZE			= 256;
+	public static final int		LIGHT_SIZE			= 16;
 	public static final float	UPSCALE				= 1.0f;
 
 	private FrameBuffer			occludersFBO		= null;
@@ -37,6 +37,7 @@ public class ColourBlindGame implements ApplicationListener {
 	private TextureRegion		shadowMap1D			= null;
 	private ShaderProgram		shadowMapShader		= null;
 	private ShaderProgram		shadowRenderShader	= null;
+	private ShaderProgram		colourShader		= null;
 
 	private String				VERTEX_SHADER		= null;
 
@@ -46,9 +47,6 @@ public class ColourBlindGame implements ApplicationListener {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
 		camera = new OrthographicCamera();
-		// camera.setToOrtho(false, Gdx.graphics.getWidth(),
-		// Gdx.graphics.getHeight());
-
 		camera.setToOrtho(false, Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
 
@@ -86,6 +84,15 @@ public class ColourBlindGame implements ApplicationListener {
 			throw new GdxRuntimeException("Failed to compile lights2.glslf:\n"
 					+ shadowRenderShader.getLog());
 		}
+
+		colourShader = new ShaderProgram(Gdx.files.internal(
+				"data/lights3.glslv").readString(), Gdx.files.internal(
+				"data/lights3.glslf").readString());
+
+		if (colourShader.isCompiled() == false) {
+			throw new GdxRuntimeException("Failed to compile lights3.glslf:\n"
+					+ colourShader.getLog());
+		}
 	}
 
 	@Override
@@ -103,82 +110,118 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.position.y = player.position.y;
 		camera.update();
 
-		// OCCLUDER -----------------------------------
-		occludersFBO.begin();
+		if (player.isLightOn()) {
+			// OCCLUDER -----------------------------------
+			occludersFBO.begin();
 
-		Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+			Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		camera.setToOrtho(false, occludersFBO.getWidth(),
-				occludersFBO.getHeight());
+			camera.setToOrtho(false, occludersFBO.getWidth(),
+					occludersFBO.getHeight());
 
-		camera.translate(player.getX() - (LIGHT_SIZE / 2f), player.getY()
-				- (LIGHT_SIZE / 2f));
+			camera.translate(player.getX() - (LIGHT_SIZE / 2f), player.getY()
+					- (LIGHT_SIZE / 2f));
 
-		camera.update();
+			camera.update();
 
-		sb.setProjectionMatrix(camera.combined);
-		sb.setShader(null);
+			sb.setProjectionMatrix(camera.combined);
+			sb.setShader(null);
 
-		level.render(camera);
+			level.renderAll(camera);
 
-		occludersFBO.end();
+			occludersFBO.end();
 
-		// SHADOW MAP ------------------------------------
-		shadowMapFBO.begin();
+			// SHADOW MAP ------------------------------------
+			shadowMapFBO.begin();
 
-		Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+			Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		sb.setShader(shadowMapShader);
+			sb.setShader(shadowMapShader);
 
-		sb.begin();
-		shadowMapShader.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
-		shadowMapShader.setUniformf("upScale", UPSCALE);
+			sb.begin();
+			shadowMapShader.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
+			shadowMapShader.setUniformf("upScale", UPSCALE);
 
-		camera.setToOrtho(false, shadowMapFBO.getWidth(),
-				shadowMapFBO.getHeight());
-		sb.setProjectionMatrix(camera.combined);
+			camera.setToOrtho(false, shadowMapFBO.getWidth(),
+					shadowMapFBO.getHeight());
+			sb.setProjectionMatrix(camera.combined);
 
-		sb.draw(occluders.getTexture(), 0, 0, LIGHT_SIZE,
-				shadowMapFBO.getHeight());
-		sb.end();
+			sb.draw(occluders.getTexture(), 0, 0, LIGHT_SIZE,
+					shadowMapFBO.getHeight());
+			sb.end();
 
-		shadowMapFBO.end();
+			shadowMapFBO.end();
 
-		camera.setToOrtho(false, 20, 15);
-		sb.setProjectionMatrix(camera.combined);
+			camera.setToOrtho(false, level.WIDTH_IN_TILES,
+					level.HEIGHT_IN_TILES);
+			camera.position.x = player.position.x;
+			camera.position.y = player.position.y;
+			camera.update();
+			sb.setProjectionMatrix(camera.combined);
 
-		sb.setShader(shadowRenderShader);
-		sb.begin();
+			sb.setShader(shadowRenderShader);
+			sb.begin();
 
-		shadowRenderShader.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
-		shadowRenderShader.setUniformf("softShadows", 1f);
+			shadowRenderShader
+					.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
+			shadowRenderShader.setUniformf("softShadows", 1f);
 
-		sb.setColor(1f, 0f, 0f, 0.5f);
+			final float GREY_BRIGHTNESS = 0.8f;
+			sb.setColor(GREY_BRIGHTNESS, GREY_BRIGHTNESS, GREY_BRIGHTNESS, 0.8f);
 
-		float FINAL_SIZE = LIGHT_SIZE * UPSCALE;
+			float FINAL_SIZE = LIGHT_SIZE * UPSCALE;
+
+			sb.draw(shadowMap1D.getTexture(),
+					player.getX() + (player.getPlayerWidth() / 2.0f)
+							- (LIGHT_SIZE / 2.0f), player.getY()
+							- (LIGHT_SIZE / 2.0f), FINAL_SIZE, FINAL_SIZE);
+
+			sb.end();
+		}
+
+		// REGULAR DRAWING ----------
+		// sb.setColor(Color.WHITE);
 
 		camera.setToOrtho(false, level.WIDTH_IN_TILES, level.HEIGHT_IN_TILES);
+		camera.position.x = player.position.x;
+		camera.position.y = player.position.y;
 		camera.update();
-
-		sb.draw(shadowMap1D.getTexture(), player.getX() - FINAL_SIZE / 2f,
-				player.getY() - FINAL_SIZE / 2f, FINAL_SIZE, FINAL_SIZE);
-
-		sb.end();
-
-		sb.setColor(Color.WHITE);
+		sb.setProjectionMatrix(camera.combined);
 		sb.setShader(null);
-
-		level.render(camera);
+		sb.begin();
+		level.renderLevel(camera);
+		sb.end();
 
 		sb.begin();
-		player.render(sb);
+		sb.setShader(colourShader);
+		colourShader.setUniformf("flashLightSize", (float) LIGHT_SIZE / 2);
+		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f
+				: 0.0f));
+		colourShader.setUniformf("platform", 1.0f);
+		colourShader.setUniformf("lightCoord", player.position.x,
+				player.position.y);
+		colourShader.setUniformf("inputColour", new Color(1.0f, 1.0f, 0.0f,
+				0.0f));
+
+		level.renderPlatforms(camera);
 		sb.end();
+
+		sb.begin();
+		colourShader.setUniformf("platform", 0.0f);
+		colourShader.setUniformf("inputColour", player.getPlayerColour()
+				.toGdxColour());
+		player.render(sb);
+
+		sb.end();
+
+		sb.setShader(null);
 	}
 
 	@Override
 	public void dispose() {
+		colourShader.dispose();
 		shadowRenderShader.dispose();
 		shadowMapShader.dispose();
 		occludersFBO.dispose();

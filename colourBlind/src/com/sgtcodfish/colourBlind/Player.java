@@ -22,33 +22,46 @@ public class Player {
 		STANDING, RUNNING, JUMPING
 	}
 
-	public static final float	JUMP_VELOCITY			= 0.70f;
-	public static final float	RUN_VELOCITY			= 0.25f;
-	public static final float	GRAVITY					= -0.05f;
+	public static final float	JUMP_VELOCITY					= 0.70f;
+	public static final float	RUN_VELOCITY					= 0.25f;
+	public static final float	GRAVITY							= -0.05f;
+	public static final float	TERMINAL_VELOCITY				= JUMP_VELOCITY;
 
-	private Texture				texture					= null;
-	private int					PLAYER_TEXTURE_WIDTH	= 64;
-	private int					PLAYER_TEXTURE_HEIGHT	= 128;
+	private Texture				texture							= null;
+	private int					PLAYER_TEXTURE_WIDTH			= 64;
+	private int					PLAYER_TEXTURE_HEIGHT			= 128;
 
-	public static final Vector2	INITIAL_POSITION		= new Vector2(3, 2);
+	public static final Vector2	INITIAL_POSITION				= new Vector2(
+																		3, 2);
 
-	public static final float	PLAYER_SCALE_FACTOR		= 55.0f;
+	public static final float	PLAYER_SCALE_FACTOR				= 55.0f;
 
-	private float				PLAYER_WIDTH			= 0f;
-	private float				PLAYER_HEIGHT			= 0f;
+	private float				PLAYER_WIDTH					= 0f;
+	private float				PLAYER_HEIGHT					= 0f;
 
-	private PlayerState			state					= PlayerState.STANDING;
-	private float				stateTime				= 0.0f;
+	private PlayerState			state							= PlayerState.STANDING;
+	private float				stateTime						= 0.0f;
 
-	public Vector2				position				= new Vector2();
-	public Vector2				velocity				= new Vector2();
+	public Vector2				position						= new Vector2();
+	public Vector2				velocity						= new Vector2();
 
-	public Animation			stand					= null;
-	public Animation			run						= null;
-	public Animation			jump					= null;
+	public Animation			stand							= null;
+	public Animation			run								= null;
+	public Animation			jump							= null;
 
-	private boolean				facingLeft				= false;
-	private boolean				isGrounded				= true;
+	private boolean				facingLeft						= false;
+	private boolean				isGrounded						= true;
+
+	private CBColour			playerColour					= null;
+
+	// time in seconds the fl has been on
+	private float				flashLightOnTime				= -1.0f;
+	// time in seconds the fl will stay on
+	public static final float	FLASHLIGHT_ON_DURATION			= 2.0f;
+	// time in seconds the fl has left to cool down.
+	private float				flashLightCooldown				= 0.0f;
+	// time in seconds the fl needs to cool down each time
+	public static final float	FLASHLIGHT_COOLDOWN_DURATION	= 2.0f;
 
 	public Player() {
 		FileHandle playerImage = Gdx.files
@@ -69,6 +82,8 @@ public class Player {
 		PLAYER_HEIGHT = (PLAYER_TEXTURE_HEIGHT * (1.0f / PLAYER_SCALE_FACTOR));
 
 		position.set(Player.INITIAL_POSITION);
+
+		playerColour = new CBColour(CBColour.GameColour.RED);
 	}
 
 	/**
@@ -97,6 +112,54 @@ public class Player {
 			}
 		}
 
+		// handle colour changes - we default to RED because why not
+		// i - RED
+		// j - GREEN
+		// k - BLUE
+		// l - YELLOW
+		if (Gdx.input.isKeyPressed(Keys.I)) {
+			// Gdx.app.debug("COLOUR_CHANGE", "Changed player colour to RED.");
+			setPlayerColour(CBColour.GameColour.RED);
+		} else if (Gdx.input.isKeyPressed(Keys.J)) {
+			// Gdx.app.debug("COLOUR_CHANGE",
+			// "Changed player colour to GREEN.");
+			setPlayerColour(CBColour.GameColour.GREEN);
+		} else if (Gdx.input.isKeyPressed(Keys.K)) {
+			// Gdx.app.debug("COLOUR_CHANGE", "Changed player colour to BLUE.");
+			setPlayerColour(CBColour.GameColour.BLUE);
+		} else if (Gdx.input.isKeyPressed(Keys.L)) {
+			// Gdx.app.debug("COLOUR_CHANGE","Changed player colour toYELLOW.");
+			setPlayerColour(CBColour.GameColour.YELLOW);
+		}
+
+		if (isLightOn()) {
+			// if light is on, check if it's been on for too long, and turn it
+			// off and start cooldown if it's been on
+			flashLightOnTime += deltaTime;
+
+			if (flashLightOnTime >= FLASHLIGHT_ON_DURATION) {
+				Gdx.app.debug("FLASHLIGHT",
+						"Flashlight time up. Cooldown started.");
+				flashLightOnTime = -1.0f;
+				flashLightCooldown = FLASHLIGHT_COOLDOWN_DURATION;
+			}
+		} else if (isLightOnCooldown()) {
+			// if light is on cooldown, handle in a similar way until it's
+			// cooled off.
+			flashLightCooldown -= deltaTime;
+
+			if (flashLightCooldown < 0.0f) {
+				Gdx.app.debug("FLASHLIGHT", "Flashlight finished cooling down.");
+				flashLightCooldown = 0.0f;
+			}
+		} else if (Gdx.input.isButtonPressed(0)) {
+			// LMB -> Turn on light if we can
+			// only get here if not on and not on cooldown
+			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
+			flashLightOnTime = 0.01f;
+		}
+
+		// handle jumping
 		if (Gdx.input.isKeyPressed(Keys.SPACE)) {
 			if (isGrounded) {
 				velocity.y += JUMP_VELOCITY;
@@ -105,6 +168,7 @@ public class Player {
 			}
 		}
 
+		// handle moving left
 		if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) {
 			velocity.x = -RUN_VELOCITY;
 
@@ -115,6 +179,7 @@ public class Player {
 			facingLeft = true;
 		}
 
+		// handle moving right
 		if (Gdx.input.isKeyPressed(Keys.RIGHT)
 				|| Gdx.input.isKeyPressed(Keys.D)) {
 			velocity.x = RUN_VELOCITY;
@@ -128,12 +193,18 @@ public class Player {
 
 		velocity.y += GRAVITY;
 
+		// stop if we've clearly stopped running.
 		if (Math.abs(velocity.x) < 0.1f) {
 			velocity.x = 0.0f;
 
 			if (isGrounded) {
 				setState(PlayerState.STANDING);
 			}
+		}
+
+		// don't want to fall too ridiculously fast
+		if (Math.abs(velocity.y) > TERMINAL_VELOCITY) {
+			velocity.y = Math.signum(velocity.y) * TERMINAL_VELOCITY;
 		}
 
 		Vector2 ptCoords = new Vector2(position);
@@ -147,8 +218,11 @@ public class Player {
 			ptCoords.x = 0;
 		}
 
-		TiledMapTileLayer layer = (TiledMapTileLayer) level.renderer.getMap()
-				.getLayers().get("level");
+		TiledMapTileLayer levelLayer = (TiledMapTileLayer) level.renderer
+				.getMap().getLayers().get("level");
+
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) level.renderer
+				.getMap().getLayers().get("platforms");
 
 		if (velocity.y > 0.0f) {
 			ptCoords.y += PLAYER_HEIGHT;
@@ -159,21 +233,35 @@ public class Player {
 		}
 
 		// check for y collisions
-		Cell cell = layer.getCell((int) position.x, (int) ptCoords.y);
+		Cell levelCell = levelLayer.getCell((int) position.x, (int) ptCoords.y);
+		Cell platformCell = platformLayer.getCell((int) position.x,
+				(int) ptCoords.y);
 
-		if (cell != null) {
-			// there's something there
-			if (velocity.y < 0.0f) {
-				isGrounded = true;
+		if (levelCell != null) {
+			// there's something there in the level, so it must be collidable
+			handleYCollision();
+		} else if (platformCell != null) {
+			// check if we collide with this platform
+			if (this.getPlayerColour().equals(
+					level.getPlatformCellColour(platformCell))) {
+				// if we get here, we collide since colours match
+				// Gdx.app.debug("PLATFORM_COLLISION",
+				// "Platform collision detected.");
+				handleYCollision();
 			}
-
-			velocity.y = 0;
 		}
 
-		cell = layer.getCell((int) ptCoords.x, (int) position.y);
+		levelCell = levelLayer.getCell((int) ptCoords.x, (int) position.y);
+		platformCell = platformLayer
+				.getCell((int) ptCoords.x, (int) position.y);
 
-		if (cell != null) {
-			velocity.x = 0;
+		if (levelCell != null) {
+			handleXCollision();
+		} else if (platformCell != null) {
+			if (this.getPlayerColour().equals(
+					level.getPlatformCellColour(platformCell))) {
+				handleXCollision();
+			}
 		}
 
 		position.add(velocity);
@@ -203,8 +291,40 @@ public class Player {
 		}
 	}
 
+	private void handleYCollision() {
+		if (velocity.y < 0.0f) {
+			isGrounded = true;
+		}
+
+		velocity.y = 0.0f;
+	}
+
+	private void handleXCollision() {
+		velocity.x = 0.0f;
+	}
+
+	public boolean isLightOn() {
+		return (flashLightOnTime >= 0.0f);
+	}
+
+	public boolean isLightOnCooldown() {
+		return (flashLightCooldown > 0.0f);
+	}
+
 	public void dispose() {
 		texture.dispose();
+	}
+
+	public void setPlayerColour(CBColour.GameColour colour) {
+		playerColour = new CBColour(colour);
+	}
+
+	public void setPlayerColour(CBColour colour) {
+		playerColour = colour;
+	}
+
+	public CBColour getPlayerColour() {
+		return playerColour;
 	}
 
 	public void setState(PlayerState ns) {

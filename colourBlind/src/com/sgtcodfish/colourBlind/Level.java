@@ -1,5 +1,8 @@
 package com.sgtcodfish.colourBlind;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -11,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
  * Holds a single level, loaded from a TMX file created using Tiled.
@@ -18,8 +22,11 @@ import com.badlogic.gdx.utils.Array;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class Level {
-	public OrthogonalTiledMapRenderer	renderer	= null;
-	private TiledMap					tiledMap	= null;
+	public OrthogonalTiledMapRenderer	renderer			= null;
+	private TiledMap					tiledMap			= null;
+
+	private HashMap<Cell, CBColour>		platformColourCache	= null;
+	private ArrayList<Cell>				firstCells			= null;
 
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
@@ -43,21 +50,124 @@ public class Level {
 		MapLayers layers = tiledMap.getLayers();
 		Gdx.app.debug("LEVEL_LOAD", "Level layers: " + layers.getCount());
 
+		boolean levelLayerFound = false, platformsLayerFound = false;
+
 		for (int i = 0; i < layers.getCount(); i++) {
-			Gdx.app.debug("LEVEL_LOAD", "Layer " + i + " name: "
-					+ layers.get(i).getName());
+			String layerName = layers.get(i).getName();
+			Gdx.app.debug("LEVEL_LOAD", "Layer " + i + " name: " + layerName);
+
+			if (layerName.equals("level")) {
+				levelLayerFound = true;
+			} else if (layerName.equals("platforms")) {
+				platformsLayerFound = true;
+			}
 		}
 
-		TiledMapTileLayer tml = (TiledMapTileLayer) tiledMap.getLayers().get(0);
-		HEIGHT_IN_TILES = tml.getHeight();
-		WIDTH_IN_TILES = tml.getWidth();
-		TILE_WIDTH = (int) tml.getTileWidth();
-		TILE_HEIGHT = (int) tml.getTileHeight();
+		if (!(levelLayerFound && platformsLayerFound)) {
+			// we're missing a layer, we need to abort
+			Gdx.app.debug("LEVEL_LOAD", "Level layer missing: "
+					+ (!levelLayerFound));
+			Gdx.app.debug("LEVEL_LOAD", "Platforms layer missing: "
+					+ (!platformsLayerFound));
+
+			throw new GdxRuntimeException(
+					"Unable to find both \"level\" and \"platform\" layers in "
+							+ fullFileName + ".");
+		}
+
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
+				.getLayers().get("platforms");
+		HEIGHT_IN_TILES = platformLayer.getHeight();
+		WIDTH_IN_TILES = platformLayer.getWidth();
+		TILE_WIDTH = (int) platformLayer.getTileWidth();
+		TILE_HEIGHT = (int) platformLayer.getTileHeight();
+
+		// create a hashmap of all the cells in the platforms level
+		// and cache them for checking colours quickly in collisions code
+		boolean samePlatform = false;
+		CBColour platColour = null;
+		int platformsFound = 0;
+
+		firstCells = new ArrayList<Cell>();
+		platformColourCache = new HashMap<Cell, CBColour>();
+
+		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
+			for (int x = 0; x < WIDTH_IN_TILES; x++) {
+				Cell c = platformLayer.getCell(x, y);
+
+				if (c != null) {
+					// found a cell, start of platform?
+					if (!samePlatform) {
+						samePlatform = true;
+						platformsFound++;
+						platColour = new CBColour();
+						Gdx.app.debug(
+								"LEVEL_LOAD",
+								"Platform found, colour will be "
+										+ CBColour.GameColour
+												.asString(platColour
+														.getColour()) + ".");
+
+						firstCells.add(c);
+					}
+					platformColourCache.put(c, platColour);
+				} else {
+					if (samePlatform) {
+						// come to the end of the platform
+						samePlatform = false;
+						platColour = null;
+					}
+				}
+			}
+		}
+
+		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platformsFound
+				+ " platforms.");
 	}
 
-	public void render(OrthographicCamera camera) {
+	/**
+	 * Renders the whole level at once. Useful for lighting projections. Does
+	 * not require a call to SpriteBatch.begin().
+	 * 
+	 * @param camera
+	 *            The camera in which to render.
+	 */
+	public void renderAll(OrthographicCamera camera) {
 		renderer.setView(camera);
 		renderer.render();
+	}
+
+	/**
+	 * Renders only the platforms on the level, which is the layer called
+	 * "platforms". REQUIRES a call to SpriteBatch.begin() prior to calling.
+	 * 
+	 * @param camera
+	 *            The camera in which to render.
+	 */
+	public void renderPlatforms(OrthographicCamera camera) {
+		renderer.setView(camera);
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
+				.getLayers().get("platforms");
+		renderer.renderTileLayer(platformLayer);
+	}
+
+	/**
+	 * Renders only the non-platform collidable blocks in the level, which is
+	 * the layer called "level". REQUIRES a call to SpriteBatch.begin() prior to
+	 * calling.
+	 * 
+	 * @param camera
+	 *            The camera in which to render.
+	 */
+	public void renderLevel(OrthographicCamera camera) {
+		renderer.setView(camera);
+		TiledMapTileLayer levelLayer = (TiledMapTileLayer) tiledMap.getLayers()
+				.get("level");
+		renderer.renderTileLayer(levelLayer);
+	}
+
+	public CBColour getPlatformCellColour(Cell c) {
+		return platformColourCache.get(c);
 	}
 
 	/**
@@ -99,6 +209,9 @@ public class Level {
 	}
 
 	public void dispose() {
+		firstCells.clear();
+		platformColourCache.clear();
+		platformColourCache = null;
 		tiledMap.dispose();
 		renderer.dispose();
 	}

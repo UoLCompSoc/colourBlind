@@ -10,12 +10,12 @@
  </layer>
  <layer name="platforms" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjIKhAQAEsAAB
+   eJxjYBgF9ASyQCwHxfID7JbBBpDDBhmP1HBCD4+RGg7IAADckQHh
   </data>
  </layer>
  <layer name="level" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjZaAeYAdi1lHz8AJZIJaDYnkqmIcPDDXzkMMGGaOH00C5j97moYfHUEwvnEDMRSXMDcQAnlsDUQ==
+   eJxjZaAeYAdi1lHzRs0bNW/UPKh5nEDMRSXMDcQAxmsBcQ==
   </data>
  </layer>
 </map>
