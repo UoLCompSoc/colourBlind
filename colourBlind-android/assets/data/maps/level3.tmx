@@ -5,7 +5,7 @@
  </tileset>
  <layer name="level" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJzt1FEKABAQRdGHJOx/vyyAQpOk++p+n+ZnnCR/udCLur+Ei4u7vDLp13txcXHfcGe/Z5SlazlcXFzcEzdr7wdaVHsNaTcDYw==
+   eJzt1MEKABAQRdGHJPz//7JVFDUpuq/u+jSbcZL85UIv6v4SLi7u9sqiX+/FxcUdt/oBsyxdy+Hi4uK+5Gad/V6Laq8BnMcDYw==
   </data>
  </layer>
  <layer name="door" width="30" height="30">
@@ -15,7 +15,7 @@
  </layer>
  <layer name="platforms" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DkAFkglgNi+YF2CBKAuQkZDyb3DUaALcxGetjhCpPR8BjZ4TAKRi4YrVsggNiycbTMGFgwGv4DCwATVQYZ
+   eJxjYBgFo2AU0AvIArEcEMtjEUPG8phaRwESwBZmIz3scIXJSA0PGEAPl5EeHqNg5IDRugUCiC0bR8uKgQWj4T+wAADhlgYZ
   </data>
  </layer>
 </map>
