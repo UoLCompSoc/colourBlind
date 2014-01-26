@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="35" height="60" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="TileSet" tilewidth="32" tileheight="32">
+  <image source="../TileSet.png" width="128" height="256"/>
+ </tileset>
+ <layer name="bg" width="35" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztwTEBAAAAwqD1T20ND6AAAAAAAAAAAL4MINAAAQ==
+  </data>
+ </layer>
+ <layer name="platforms" width="35" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztmFEOgCAMQ7mIev9b6o+RGEWCbA77XsK/addRSQlgXKbtzA1n+eJj4RW51/hXxzkfirqpz83VjrTU4W4nK2jvrTX0g105HqqesWfisnvz5Ifq7EakNU/KXecvqHvodZeU3mpUtI4A3SEetZ0hKmTbF6sMq7+VWaLSM/ivOVDIU2mu6RrgyQr54BLf
+  </data>
+ </layer>
+ <layer name="level" width="35" height="60">
+  <data encoding="base64" compression="zlib">
+   eJzt2DEKgDAQBdGvImK8/33NAcZtbBYyD34bhi2zJdkb7Jg708MVW4gtzBZmC7OF2cJsYSu3jGIr36ViC7OF2cJsYbYwW5gtzBZmC7OF2cJsYbYwW5gtzBZmC7OF2cK6tdyp/6O/9ge998y9GdQEDQ==
+  </data>
+ </layer>
+ <layer name="door" width="35" height="60">
+  <data encoding="base64" compression="zlib">
+   eJztzscNgAAQBDEaIOfQf51sF4eQLc1/muZb2tSlPg3FL2Oa0pyW4pc1bWlPR/HLma50p6f4BQAAAAAAAIB/egE0WAFJ
+  </data>
+ </layer>
+</map>
