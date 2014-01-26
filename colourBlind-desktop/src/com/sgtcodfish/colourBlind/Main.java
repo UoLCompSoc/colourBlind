@@ -6,7 +6,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 public class Main {
 	public static void  main(String[] args) {
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
-		cfg.title = "ColourBlind :: Global Game Jam";
+		cfg.title = "ColorBlind :: Global Game Jam";
 		cfg.useGL20 = true;
 		cfg.width = 800;
 		cfg.height = 600;
