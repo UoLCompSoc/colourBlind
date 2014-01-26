@@ -53,7 +53,8 @@ public class ColourBlindGame implements ApplicationListener {
 	@Override
 	public void create() {
 		ShaderProgram.pedantic = false;
-		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+		Gdx.app.setLogLevel(Application.LOG_NONE);
+		// Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(),
@@ -257,7 +258,11 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.setShader(null);
 		sb.begin();
 		level.renderDoor(camera);
-		sb.draw(level.colourTexture, 0.0f, 0.0f);
+
+		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
+			sb.draw(level.colourTexture, 0.0f, 0.0f);
+		}
+
 		sb.end();
 
 		sb.setShader(colourShader);
