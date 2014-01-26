@@ -5,12 +5,12 @@
  </tileset>
  <layer name="level" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjZGBgYKIzZgZiVgb6A/ZRe0ftpaG9skAshwXL09heegNi7EUOC2r5fzD7d9TeUXtHkr3oZRy97CUHjNo7au+ovaP2DiV7OYGYi86YG4gB1rgEew==
+   eJzt1EEKwCAUA9HfSinVM2jvf8tmLa4EA8UJzPrtckTEaS6pK/y7cXEXulW1Qe9i1z1cXNy93f7jXO7McHFxcf/kPiqbK+oDSxgEAw==
   </data>
  </layer>
  <layer name="platforms" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjIKBBbJALIeE5QfWORSDoeKfoeLOoQjQw3awhy829w4Vtw9mAAvXwRh+wzH/40rHuPxGqvpRQF0w1MrJ4QwAhaQGzQ==
+   eJxjYBgFo2AUjALqAlkgloNieRLVE6tnMIOh4p+h4s6hCNDDdrCHLzb3DhW3D2YAC9fBGH7DMf/jSse4/Eaq+lFAXTDUysnhDAARUwdF
   </data>
  </layer>
  <layer name="door" width="30" height="30">
