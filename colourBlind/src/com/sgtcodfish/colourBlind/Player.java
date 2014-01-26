@@ -163,7 +163,8 @@ public class Player {
 				Gdx.app.debug("FLASHLIGHT", "Flashlight finished cooling down.");
 				flashLightCooldown = 0.0f;
 			}
-		} else if (Gdx.input.isButtonPressed(0)) {
+		} else if (Gdx.input.isButtonPressed(0)
+				|| Gdx.input.isKeyPressed(Keys.E)) {
 			// LMB -> Turn on light if we can
 			// only get here if not on and not on cooldown
 			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
@@ -277,6 +278,10 @@ public class Player {
 
 		position.add(velocity);
 		velocity.x *= (RUN_VELOCITY / 10);
+
+		if (position.y < -2.0f) {
+			position.set(1, 3);
+		}
 
 		return false;
 	}

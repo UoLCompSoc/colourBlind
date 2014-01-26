@@ -77,7 +77,7 @@ public class Level {
 					+ (!doorLayerFound));
 
 			throw new GdxRuntimeException(
-					"Unable to find both \"level\" and \"platform\" layers in "
+					"Unable to find \"door\", \"level\" and \"platforms\" layers in "
 							+ fullFileName + ".");
 		}
 

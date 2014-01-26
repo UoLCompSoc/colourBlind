@@ -48,6 +48,8 @@ public class ColourBlindGame implements ApplicationListener {
 	private int					levelCount			= 0;
 	private ArrayList<String>	levelList			= null;
 
+	private BGM					bgm					= null;
+
 	@Override
 	public void create() {
 		ShaderProgram.pedantic = false;
@@ -120,6 +122,10 @@ public class ColourBlindGame implements ApplicationListener {
 			throw new GdxRuntimeException("Failed to compile lights3.glslf:\n"
 					+ colourShader.getLog());
 		}
+
+		bgm = new BGM();
+		bgm.create();
+		bgm.play();
 	}
 
 	@Override
