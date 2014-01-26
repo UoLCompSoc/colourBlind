@@ -31,6 +31,8 @@ public class Level {
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
 
+	public Rectangle					doorRect			= null;
+
 	/**
 	 * Creates a new level, loaded the tmx file called "levelFileName" in the
 	 * "data/maps" directory.
@@ -50,7 +52,7 @@ public class Level {
 		MapLayers layers = tiledMap.getLayers();
 		Gdx.app.debug("LEVEL_LOAD", "Level layers: " + layers.getCount());
 
-		boolean levelLayerFound = false, platformsLayerFound = false;
+		boolean levelLayerFound = false, platformsLayerFound = false, doorLayerFound = false;
 
 		for (int i = 0; i < layers.getCount(); i++) {
 			String layerName = layers.get(i).getName();
@@ -60,15 +62,19 @@ public class Level {
 				levelLayerFound = true;
 			} else if (layerName.equals("platforms")) {
 				platformsLayerFound = true;
+			} else if (layerName.equals("door")) {
+				doorLayerFound = true;
 			}
 		}
 
-		if (!(levelLayerFound && platformsLayerFound)) {
+		if (!(levelLayerFound && platformsLayerFound && doorLayerFound)) {
 			// we're missing a layer, we need to abort
 			Gdx.app.debug("LEVEL_LOAD", "Level layer missing: "
 					+ (!levelLayerFound));
 			Gdx.app.debug("LEVEL_LOAD", "Platforms layer missing: "
 					+ (!platformsLayerFound));
+			Gdx.app.debug("LEVEL_LOAD", "Door layer missing: "
+					+ (!doorLayerFound));
 
 			throw new GdxRuntimeException(
 					"Unable to find both \"level\" and \"platform\" layers in "
@@ -123,6 +129,37 @@ public class Level {
 
 		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platformsFound
 				+ " platforms.");
+
+		int startX = -1, startY = -1, endX = -1, endY = -1;
+		boolean found = false;
+
+		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers()
+				.get("door");
+		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
+			for (int x = 0; x < WIDTH_IN_TILES; x++) {
+				if (!found) {
+					if (doorLayer.getCell(x, y) != null) {
+						startX = x;
+						startY = y;
+						found = true;
+					}
+				} else {
+					// found
+					if (doorLayer.getCell(x, y) == null) {
+						endX = x - 1;
+						endY = y;
+					}
+				}
+			}
+		}
+
+		Gdx.app.debug("LEVEL_LOAD", "Door startX = " + startX + ", endX = "
+				+ endX);
+		Gdx.app.debug("LEVEL_LOAD", "Door startY = " + startY + ", endY = "
+				+ endY);
+
+		doorRect = new Rectangle((float) startX, (float) startY,
+				(float) (endX - startX), (float) (endY - startY));
 	}
 
 	/**

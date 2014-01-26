@@ -132,7 +132,12 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.setShader(null);
 
 		if (player.update(level, deltaTime)) {
-			nextLevel();
+			if (nextLevel()) {
+				// we're done
+				Gdx.app.exit();
+			} else {
+				// onwards
+			}
 
 			return;
 		}

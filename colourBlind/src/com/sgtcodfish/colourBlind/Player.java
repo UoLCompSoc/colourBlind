@@ -117,9 +117,7 @@ public class Player {
 			playerRectangle.set(position.x, position.y, PLAYER_WIDTH,
 					PLAYER_HEIGHT);
 
-			Rectangle doorRect = new Rectangle();
-
-			if (playerRectangle.contains(doorRect)) {
+			if (level.doorRect.contains(playerRectangle)) {
 				Gdx.app.debug("DOOR_OPENED", "Player opened a door!");
 				return true;
 			}
