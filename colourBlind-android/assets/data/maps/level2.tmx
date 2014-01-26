@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="40" height="40" tilewidth="32" tileheight="32">
+<map version="1.0" orientation="orthogonal" width="30" height="30" tilewidth="32" tileheight="32">
  <tileset firstgid="1" name="TileSet" tilewidth="32" tileheight="32">
   <image source="../TileSet.png" width="128" height="256"/>
  </tileset>
- <layer name="level" width="40" height="40">
+ <layer name="level" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJztltsKgCAQBbciovqG6v//Mp8j0xgUL2fgvIgsw+LKDmY2FprJZbZyWUx+BPkxevA7XE5PLli7h/6lRH4M+THkx2jRb3skJS32LyfyY+Twe87Tn7lS/xi1+PneSK5/OORXKvJjyI8hP4b8GPJj1OC3Wtx+ENoZYs7f7nzV311uRpMFBw==
+   eJxjZGBgYKIzZgZiVgb6A/ZRe0ftRQNcBDCt7KUGGLV31N5Re0e2vYTKL2x4KPt31N5Re0ftHbV3uNvLyUBe2U4J5gZiAF6VA4s=
   </data>
  </layer>
- <layer name="platforms" width="40" height="40">
+ <layer name="door" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJzt12EKgDAIhmEvUt3/lhURRFRsM1vq+0A/F+I+NicCIKJh+abeRVRY6x2lreZ9rXa9p3596djf0j55y18m5/0k+3ldZeGNPNz9l6yhRMudkxGzS19W56e2DvJgj57bY1aNQ/tOj+5pZqZvm7/ct/BvBmYdCsk=
+   eJztzcsRgCAQwFAa8IOIgth/naYETnsxbybnpKQZC6200R74zXRQoTPwW+mim1rgt9NDg97AryRJkvRHH4QRAUk=
   </data>
  </layer>
- <layer name="door" width="40" height="40">
+ <layer name="platforms" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJztzskJwDAQwEA3kNs5nf7rtApYyCewHw3or1KkbwONNNGc/BJZaKWNavJLZKeDTrqSXyI3PdToTX6RJEmSJEmSpD908dUBSQ==
+   eJxjYBgFo2AUDHUgC8RyWLD8QDpqBAJc8TAaF5hhM9LDgxSAHHaj4UYeGC0jUcFoeGACWJiM5DCgFsCWvkbDdXADAMMzBYM=
   </data>
  </layer>
 </map>

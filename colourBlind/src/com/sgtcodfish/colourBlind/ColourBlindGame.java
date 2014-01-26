@@ -246,6 +246,10 @@ public class ColourBlindGame implements ApplicationListener {
 				player.position.y);
 		colourShader.setUniformf("inputColour", new Color(1.0f, 1.0f, 0.0f,
 				0.0f));
+		Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE3);
+		level.colourTexture.bind();
+		Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE0);
+		colourShader.setUniformi("u_colourTex", 3);
 
 		level.renderPlatforms(camera);
 		sb.end();
@@ -253,6 +257,7 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.setShader(null);
 		sb.begin();
 		level.renderDoor(camera);
+		sb.draw(level.colourTexture, 0.0f, 0.0f);
 		sb.end();
 
 		sb.setShader(colourShader);

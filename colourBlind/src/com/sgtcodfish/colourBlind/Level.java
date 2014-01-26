@@ -1,11 +1,13 @@
 package com.sgtcodfish.colourBlind;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -13,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -26,12 +29,15 @@ public class Level {
 	private TiledMap					tiledMap			= null;
 
 	private HashMap<Cell, CBColour>		platformColourCache	= null;
-	private ArrayList<Cell>				firstCells			= null;
+	private HashMap<Cell, Integer>		firstCells			= null;
+	private HashMap<Cell, Vector2>		firstCellCoords		= null;
 
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
 
 	public Rectangle					doorRect			= null;
+
+	public Texture						colourTexture		= null;
 
 	/**
 	 * Creates a new level, loaded the tmx file called "levelFileName" in the
@@ -93,9 +99,14 @@ public class Level {
 		boolean samePlatform = false;
 		CBColour platColour = null;
 		int platformsFound = 0;
+		int platformWidth = 0;
+		Cell first = null;
 
-		firstCells = new ArrayList<Cell>();
+		firstCells = new HashMap<Cell, Integer>();
+		firstCellCoords = new HashMap<TiledMapTileLayer.Cell, Vector2>();
 		platformColourCache = new HashMap<Cell, CBColour>();
+
+		int firstX = 0, firstY = 0;
 
 		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
 			for (int x = 0; x < WIDTH_IN_TILES; x++) {
@@ -104,8 +115,10 @@ public class Level {
 				if (c != null) {
 					// found a cell, start of platform?
 					if (!samePlatform) {
+						first = c;
 						samePlatform = true;
 						platformsFound++;
+						platformWidth += 1;
 						platColour = new CBColour();
 						Gdx.app.debug(
 								"LEVEL_LOAD",
@@ -114,7 +127,9 @@ public class Level {
 												.asString(platColour
 														.getColour()) + ".");
 
-						firstCells.add(c);
+						firstX = x;
+						firstY = y;
+
 					}
 					platformColourCache.put(c, platColour);
 				} else {
@@ -122,10 +137,26 @@ public class Level {
 						// come to the end of the platform
 						samePlatform = false;
 						platColour = null;
+						firstCells.put(first, platformWidth);
+						firstCellCoords.put(first, new Vector2(firstX, firstY));
+						platformWidth = 0;
+						firstX = 0;
+						firstY = 0;
 					}
 				}
 			}
 		}
+
+		Pixmap pm = new Pixmap(WIDTH_IN_TILES, HEIGHT_IN_TILES, Format.RGBA8888);
+
+		for (Cell c : firstCells.keySet()) {
+			pm.setColor(platformColourCache.get(c).toGdxColour(1.0f));
+			Vector2 vec = firstCellCoords.get(c);
+			pm.drawRectangle((int) vec.x + 1, (int) vec.y + 1,
+					firstCells.get(c), 1);
+		}
+
+		colourTexture = new Texture(pm);
 
 		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platformsFound
 				+ " platforms.");
@@ -253,6 +284,8 @@ public class Level {
 	}
 
 	public void dispose() {
+		colourTexture.dispose();
+		firstCellCoords.clear();
 		firstCells.clear();
 		platformColourCache.clear();
 		platformColourCache = null;
