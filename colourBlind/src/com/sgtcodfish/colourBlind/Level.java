@@ -166,6 +166,13 @@ public class Level {
 		renderer.renderTileLayer(levelLayer);
 	}
 
+	public void renderDoor(OrthographicCamera camera) {
+		renderer.setView(camera);
+		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers()
+				.get("door");
+		renderer.renderTileLayer(doorLayer);
+	}
+
 	public CBColour getPlatformCellColour(Cell c) {
 		return platformColourCache.get(c);
 	}

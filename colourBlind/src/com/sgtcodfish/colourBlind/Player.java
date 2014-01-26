@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -92,9 +93,9 @@ public class Player {
 	 * @param deltaTime
 	 *            The amount of time since the last frame
 	 */
-	public void update(Level level, float deltaTime) {
+	public boolean update(Level level, float deltaTime) {
 		if (deltaTime == 0.0f) {
-			return;
+			return false;
 		}
 
 		stateTime += deltaTime;
@@ -103,12 +104,24 @@ public class Player {
 			if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
 				position.set(Player.INITIAL_POSITION);
 				velocity.set(0.0f, 0.0f);
-				return;
 			}
 
 			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
 				Gdx.app.debug("PLAYER_COORDS", "(X,Y)=(" + position.x + ", "
 						+ position.y + ")");
+			}
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP)) {
+			Rectangle playerRectangle = new Rectangle();
+			playerRectangle.set(position.x, position.y, PLAYER_WIDTH,
+					PLAYER_HEIGHT);
+
+			Rectangle doorRect = new Rectangle();
+
+			if (playerRectangle.contains(doorRect)) {
+				Gdx.app.debug("DOOR_OPENED", "Player opened a door!");
+				return true;
 			}
 		}
 
@@ -266,6 +279,8 @@ public class Player {
 
 		position.add(velocity);
 		velocity.x *= (RUN_VELOCITY / 10);
+
+		return false;
 	}
 
 	public void render(SpriteBatch batch) {

@@ -18,4 +18,9 @@
    eJxjZaAeYAdi1lHzRs0bNW/UPKh5nEDMRSXMDcQAxmsBcQ==
   </data>
  </layer>
+ <layer name="door" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJztzLsRwCAMBFE1wNeADbj/OtkCSGAUamdeeCdyloNHQDzc7krIeFAU/ioaXnwKfx0DE7/Cn2VZ9y0OOwFJ
+  </data>
+ </layer>
 </map>

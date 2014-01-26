@@ -1,8 +1,11 @@
 package com.sgtcodfish.colourBlind;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -41,6 +44,10 @@ public class ColourBlindGame implements ApplicationListener {
 
 	private String				VERTEX_SHADER		= null;
 
+	private int					currentLevel		= 0;
+	private int					levelCount			= 0;
+	private ArrayList<String>	levelList			= null;
+
 	@Override
 	public void create() {
 		ShaderProgram.pedantic = false;
@@ -51,7 +58,27 @@ public class ColourBlindGame implements ApplicationListener {
 				Gdx.graphics.getHeight());
 
 		player = new Player();
-		level = new Level("level1.tmx");
+
+		levelList = new ArrayList<String>();
+		while (true) {
+			String fname = "level" + (levelCount + 1) + ".tmx";
+			String pathName = "data/maps/" + fname;
+			FileHandle fh = Gdx.files.internal(pathName);
+			if (fh.exists()) {
+				levelList.add(fname);
+
+				levelCount++;
+			} else {
+				break;
+			}
+		}
+
+		if (levelList.size() == 0) {
+			throw new GdxRuntimeException("Couldn't load any levels :(");
+		}
+
+		Gdx.app.debug("LEVEL_COUNT", "" + levelCount + " levels loaded.");
+		level = new Level(levelList.get(currentLevel));
 
 		occludersFBO = new FrameBuffer(Format.RGBA8888, LIGHT_SIZE, LIGHT_SIZE,
 				false);
@@ -104,7 +131,11 @@ public class ColourBlindGame implements ApplicationListener {
 		SpriteBatch sb = level.renderer.getSpriteBatch();
 		sb.setShader(null);
 
-		player.update(level, deltaTime);
+		if (player.update(level, deltaTime)) {
+			nextLevel();
+
+			return;
+		}
 
 		camera.position.x = player.position.x;
 		camera.position.y = player.position.y;
@@ -208,6 +239,13 @@ public class ColourBlindGame implements ApplicationListener {
 		level.renderPlatforms(camera);
 		sb.end();
 
+		sb.setShader(null);
+		sb.begin();
+		level.renderDoor(camera);
+		sb.end();
+
+		sb.setShader(colourShader);
+
 		sb.begin();
 		colourShader.setUniformf("platform", 0.0f);
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
@@ -217,6 +255,21 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.end();
 
 		sb.setShader(null);
+	}
+
+	// returns true to exit
+	public boolean nextLevel() {
+		currentLevel++;
+		if (currentLevel >= levelCount) {
+			// we're done
+			return true;
+		} else {
+			level.dispose();
+
+			level = new Level(levelList.get(currentLevel));
+			player.position.set(3, 1);
+			return false;
+		}
 	}
 
 	@Override
