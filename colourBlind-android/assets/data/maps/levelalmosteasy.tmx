@@ -5,17 +5,17 @@
  </tileset>
  <layer name="level" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJzt1EEKwCAUA9HfSinVM2jvf8tmLa4EA8UJzPrtckTEaS6pK/y7cXEXulW1Qe9i1z1cXNy93f7jXO7McHFxcf/kPiqbK+oDSxgEAw==
-  </data>
- </layer>
- <layer name="platforms" width="30" height="30">
-  <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjALqAlkgloNieRqoH+wA2T+D2U9DxZ1DEaCH7WAPX2zuHSpuH8wAFq6DMfyGY/7HlY5x+W2o5dPhBkbDf/AAAJyVBwk=
+   eJzt1FEKABAQRdGHJOx/v2xANELpvrrfp/kZJ8lfLvSi7i/h4uIurwz69V5cXNx37ujfzNp1Tw0XFxfX4mbZ/6G12msORgOB
   </data>
  </layer>
  <layer name="door" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJztzckJwDAAxEA34NyJnaP/Oq0qFgIa0FulKKXSRDMtwe9KG+10BL8nXdSoB783PfTSF/xKkiRJfzMALPEBSQ==
+   eJztzdsNgCAUwFAW8IGIgrj/nHYHkvthepJ+NyVpzkIrbbQHfjMdVOgM/Fa66KYW+O300KA38CtJkqT/+gAYIgFJ
+  </data>
+ </layer>
+ <layer name="platforms" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2DkAFkglgNi+YF2CBKAuQkZDyb3DUaALcxGetjhCpPR8BjZ4TAKRi4YrVsggNiycbTMGFgwGv4DCwATVQYZ
   </data>
  </layer>
 </map>
