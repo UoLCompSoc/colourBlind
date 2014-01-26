@@ -10,7 +10,7 @@
  </layer>
  <layer name="platforms" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzt2EEOgCAMRFEuIt7/lrrQDREltJMC/pd0W0hbwJgSgGjbGfmK3TGnV65a/lyEZb07n3LPI649g7LXLXVSzx/6Wc+u99lHnKdeevSzlpdZQYueN+ePqFMs1f1p3cdqczBKnaH39u1Az+el+M+xkq+5p268A/BzAHlnDQM=
+   eJzt12EKgDAIhmEvUt3/lhURRFRsM1vq+0A/F+I+NicCIKJh+abeRVRY6x2lreZ9rXa9p3596djf0j55y18m5/0k+3ldZeGNPNz9l6yhRMudkxGzS19W56e2DvJgj57bY1aNQ/tOj+5pZqZvm7/ct/BvBmYdCsk=
   </data>
  </layer>
  <layer name="door" width="40" height="40">
