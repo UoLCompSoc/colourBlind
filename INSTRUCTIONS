@@ -1,0 +1,18 @@
+HOW TO PLAY
+===========
+
+Simply unzip the zip file and then double click Colour Blind - Game.jar
+
+You need to unzip the whole file first though!
+
+Requires a recent JVM installed; if you have Java installed you probably have this.
+
+CONTROLS
+========
+
+Move: A+D or left+right
+Jump: Space
+Change colour: IJKL
+Enter door: W or Up
+
+You can only stand on platforms when you match their colour, but you can't see their colour. You have to remember what colour each platform is to navigate the levels! Reach the door to finish the level. There are 6 levels total.
