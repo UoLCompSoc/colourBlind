@@ -245,7 +245,8 @@ public class Player {
 		}
 
 		// check for y collisions
-		Cell levelCell = levelLayer.getCell((int) position.x, (int) ptCoords.y);
+		Cell levelCell = levelLayer.getCell(
+				(int) (position.x + (PLAYER_WIDTH / 2)), (int) ptCoords.y);
 		Cell platformCell = platformLayer.getCell((int) position.x,
 				(int) ptCoords.y);
 
@@ -263,7 +264,8 @@ public class Player {
 			}
 		}
 
-		levelCell = levelLayer.getCell((int) ptCoords.x, (int) position.y);
+		levelCell = levelLayer.getCell((int) ptCoords.x,
+				(int) (position.y + (PLAYER_HEIGHT / 2)));
 		platformCell = platformLayer
 				.getCell((int) ptCoords.x, (int) position.y);
 
