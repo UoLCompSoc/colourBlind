@@ -3,6 +3,7 @@
 	<name>colourBlind-desktop</name>
 	<comment></comment>
 	<projects>
+		<project>colourBlind</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

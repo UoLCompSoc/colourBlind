@@ -19,7 +19,7 @@ void main() {
 		// if distance between this point and the centre of light is smaller
 		// than threshold, reveal the point's true colour, or else black texture.
 		
-		vColour = vec4(0.0, 0.0, 0.0, 1.0);
+		vColour = vec4(1.0, 0.0, 0.0, 1.0);
 	} else {
 		vColour = vec4(0.0, 0.0, 0.0, 0.0);
 	}

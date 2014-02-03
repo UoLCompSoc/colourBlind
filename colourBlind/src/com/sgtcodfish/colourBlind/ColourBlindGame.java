@@ -169,7 +169,7 @@ public class ColourBlindGame implements ApplicationListener {
 			camera.update();
 
 			sb.setProjectionMatrix(camera.combined);
-			sb.setShader(null);
+			sb.setShader(shadowMapShader);
 
 			level.renderAll(camera);
 
