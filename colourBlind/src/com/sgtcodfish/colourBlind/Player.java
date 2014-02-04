@@ -332,7 +332,8 @@ public class Player {
 	}
 
 	public void dispose() {
-		texture.dispose();
+		if (texture != null)
+			texture.dispose();
 	}
 
 	public void setPlayerColour(CBColour.GameColour colour) {

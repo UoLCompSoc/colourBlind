@@ -10,7 +10,16 @@ uniform sampler2D u_texture;
  
 void main(void) {
 	vec4 texColour = texture2D(u_texture, vTexCoord0.st);
-	if(texColour.a > 0.5) {
+	
+	/*
+	 * If player: Ignore texture colour except alpha and draw colour
+	 * If platform: Draw true colour for flashlight (vColour.a > 0.0) or
+	 * else draw texture.
+	 */
+	
+	if(platform > 0.5) {
+		gl_FragColor = texColour+vec4(vColour.rgb, 0.0);
+	} else if(texColour.a > 0.5) {
 		gl_FragColor = vColour + inputColour;
 	} else {
 		gl_FragColor = texColour;

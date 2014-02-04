@@ -5,9 +5,8 @@ import java.util.HashMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -25,19 +24,20 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class Level {
-	public OrthogonalTiledMapRenderer	renderer			= null;
-	private TiledMap					tiledMap			= null;
+	public OrthogonalTiledMapRenderer	renderer					= null;
+	private TiledMap					tiledMap					= null;
 
-	private HashMap<Cell, CBColour>		platformColourCache	= null;
-	private HashMap<Cell, Integer>		firstCells			= null;
-	private HashMap<Cell, Vector2>		firstCellCoords		= null;
+	private HashMap<Cell, CBColour>		platformColourCache			= null;
+	private HashMap<Cell, Integer>		firstCells					= null;
+	private HashMap<Cell, Vector2>		firstCellCoords				= null;
 
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
 
-	public Rectangle					doorRect			= null;
+	public Rectangle					doorRect					= null;
 
-	public Texture						colourTexture		= null;
+	public FrameBuffer					platformColourFrameBuffer	= null;
+	public TextureRegion				platformColourTexture		= null;
 
 	/**
 	 * Creates a new level, loaded the tmx file called "levelFileName" in the
@@ -147,17 +147,6 @@ public class Level {
 			}
 		}
 
-		Pixmap pm = new Pixmap(WIDTH_IN_TILES, HEIGHT_IN_TILES, Format.RGBA8888);
-
-		for (Cell c : firstCells.keySet()) {
-			pm.setColor(platformColourCache.get(c).toGdxColour(1.0f));
-			Vector2 vec = firstCellCoords.get(c);
-			pm.drawRectangle((int) vec.x + 1, (int) vec.y + 1,
-					firstCells.get(c), 1);
-		}
-
-		colourTexture = new Texture(pm);
-
 		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platformsFound
 				+ " platforms.");
 
@@ -241,6 +230,10 @@ public class Level {
 		renderer.renderTileLayer(doorLayer);
 	}
 
+	public void renderColourTexture(OrthographicCamera camera) {
+
+	}
+
 	public CBColour getPlatformCellColour(Cell c) {
 		return platformColourCache.get(c);
 	}
@@ -284,12 +277,17 @@ public class Level {
 	}
 
 	public void dispose() {
-		colourTexture.dispose();
+		platformColourTexture = null;
+		if (platformColourFrameBuffer != null) {
+			platformColourFrameBuffer.dispose();
+		}
 		firstCellCoords.clear();
 		firstCells.clear();
 		platformColourCache.clear();
 		platformColourCache = null;
-		tiledMap.dispose();
-		renderer.dispose();
+		if (tiledMap != null)
+			tiledMap.dispose();
+		if (renderer != null)
+			renderer.dispose();
 	}
 }

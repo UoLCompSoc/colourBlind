@@ -6,7 +6,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -32,6 +31,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 	public static final int		LIGHT_SIZE			= 16;
 	public static final float	UPSCALE				= 1.0f;
+	public static final boolean	USE_FANCY_LIGHTS	= false;
 
 	private FrameBuffer			occludersFBO		= null;
 	private TextureRegion		occluders			= null;
@@ -154,74 +154,78 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.update();
 
 		if (player.isLightOn()) {
-			// OCCLUDER -----------------------------------
-			occludersFBO.begin();
+			if (USE_FANCY_LIGHTS) {
+				// OCCLUDER -----------------------------------
+				occludersFBO.begin();
 
-			Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
-			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+				Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+				Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-			camera.setToOrtho(false, occludersFBO.getWidth(),
-					occludersFBO.getHeight());
+				camera.setToOrtho(false, occludersFBO.getWidth(),
+						occludersFBO.getHeight());
 
-			camera.translate(player.getX() - (LIGHT_SIZE / 2f), player.getY()
-					- (LIGHT_SIZE / 2f));
+				camera.translate(player.getX() - (LIGHT_SIZE / 2f),
+						player.getY() - (LIGHT_SIZE / 2f));
 
-			camera.update();
+				camera.update();
 
-			sb.setProjectionMatrix(camera.combined);
-			sb.setShader(shadowMapShader);
+				sb.setProjectionMatrix(camera.combined);
+				sb.setShader(shadowMapShader);
 
-			level.renderAll(camera);
+				level.renderAll(camera);
 
-			occludersFBO.end();
+				occludersFBO.end();
 
-			// SHADOW MAP ------------------------------------
-			shadowMapFBO.begin();
+				// SHADOW MAP ------------------------------------
+				shadowMapFBO.begin();
 
-			Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
-			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+				Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+				Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-			sb.setShader(shadowMapShader);
+				sb.setShader(shadowMapShader);
 
-			sb.begin();
-			shadowMapShader.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
-			shadowMapShader.setUniformf("upScale", UPSCALE);
+				sb.begin();
+				shadowMapShader.setUniformf("resolution", LIGHT_SIZE,
+						LIGHT_SIZE);
+				shadowMapShader.setUniformf("upScale", UPSCALE);
 
-			camera.setToOrtho(false, shadowMapFBO.getWidth(),
-					shadowMapFBO.getHeight());
-			sb.setProjectionMatrix(camera.combined);
+				camera.setToOrtho(false, shadowMapFBO.getWidth(),
+						shadowMapFBO.getHeight());
+				sb.setProjectionMatrix(camera.combined);
 
-			sb.draw(occluders.getTexture(), 0, 0, LIGHT_SIZE,
-					shadowMapFBO.getHeight());
-			sb.end();
+				sb.draw(occluders.getTexture(), 0, 0, LIGHT_SIZE,
+						shadowMapFBO.getHeight());
+				sb.end();
 
-			shadowMapFBO.end();
+				shadowMapFBO.end();
 
-			camera.setToOrtho(false, level.WIDTH_IN_TILES,
-					level.HEIGHT_IN_TILES);
-			camera.position.x = player.position.x;
-			camera.position.y = player.position.y;
-			camera.update();
-			sb.setProjectionMatrix(camera.combined);
+				camera.setToOrtho(false, level.WIDTH_IN_TILES,
+						level.HEIGHT_IN_TILES);
+				camera.position.x = player.position.x;
+				camera.position.y = player.position.y;
+				camera.update();
+				sb.setProjectionMatrix(camera.combined);
 
-			sb.setShader(shadowRenderShader);
-			sb.begin();
+				sb.setShader(shadowRenderShader);
+				sb.begin();
 
-			shadowRenderShader
-					.setUniformf("resolution", LIGHT_SIZE, LIGHT_SIZE);
-			shadowRenderShader.setUniformf("softShadows", 1f);
+				shadowRenderShader.setUniformf("resolution", LIGHT_SIZE,
+						LIGHT_SIZE);
+				shadowRenderShader.setUniformf("softShadows", 1f);
 
-			final float GREY_BRIGHTNESS = 0.8f;
-			sb.setColor(GREY_BRIGHTNESS, GREY_BRIGHTNESS, GREY_BRIGHTNESS, 0.8f);
+				final float GREY_BRIGHTNESS = 0.8f;
+				sb.setColor(GREY_BRIGHTNESS, GREY_BRIGHTNESS, GREY_BRIGHTNESS,
+						0.8f);
 
-			float FINAL_SIZE = LIGHT_SIZE * UPSCALE;
+				float FINAL_SIZE = LIGHT_SIZE * UPSCALE;
 
-			sb.draw(shadowMap1D.getTexture(),
-					player.getX() + (player.getPlayerWidth() / 2.0f)
-							- (LIGHT_SIZE / 2.0f), player.getY()
-							- (LIGHT_SIZE / 2.0f), FINAL_SIZE, FINAL_SIZE);
+				sb.draw(shadowMap1D.getTexture(),
+						player.getX() + (player.getPlayerWidth() / 2.0f)
+								- (LIGHT_SIZE / 2.0f), player.getY()
+								- (LIGHT_SIZE / 2.0f), FINAL_SIZE, FINAL_SIZE);
 
-			sb.end();
+				sb.end();
+			}
 		}
 
 		// REGULAR DRAWING ----------
@@ -245,10 +249,6 @@ public class ColourBlindGame implements ApplicationListener {
 		colourShader.setUniformf("platform", 1.0f);
 		colourShader.setUniformf("lightCoord", player.position.x,
 				player.position.y);
-		colourShader.setUniformf("inputColour", new Color(1.0f, 1.0f, 0.0f,
-				0.0f));
-		Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE3);
-		level.colourTexture.bind();
 		Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE0);
 		colourShader.setUniformi("u_colourTex", 3);
 
@@ -258,10 +258,6 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.setShader(null);
 		sb.begin();
 		level.renderDoor(camera);
-
-		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
-			sb.draw(level.colourTexture, 0.0f, 0.0f);
-		}
 
 		sb.end();
 
@@ -295,14 +291,22 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void dispose() {
-		colourShader.dispose();
-		shadowRenderShader.dispose();
-		shadowMapShader.dispose();
-		occludersFBO.dispose();
-		shadowMapTex.dispose();
-		shadowMapFBO.dispose();
-		player.dispose();
-		level.dispose();
+		if (colourShader != null)
+			colourShader.dispose();
+		if (shadowRenderShader != null)
+			shadowRenderShader.dispose();
+		if (shadowMapShader != null)
+			shadowMapShader.dispose();
+		if (occludersFBO != null)
+			occludersFBO.dispose();
+		if (shadowMapTex != null)
+			shadowMapTex.dispose();
+		if (shadowMapFBO != null)
+			shadowMapFBO.dispose();
+		if (player != null)
+			player.dispose();
+		if (level != null)
+			level.dispose();
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-attribute vec4 a_position;
+attribute vec4 a_position; // position of the place we're rendering
 attribute vec4 a_color;
 attribute vec2 a_texCoord0;
 
@@ -19,7 +19,7 @@ void main() {
 		// if distance between this point and the centre of light is smaller
 		// than threshold, reveal the point's true colour, or else black texture.
 		
-		vColour = vec4(1.0, 0.0, 0.0, 1.0);
+		vColour = vec4(1.0, 0.0, 1.0, 1.0);
 	} else {
 		vColour = vec4(0.0, 0.0, 0.0, 0.0);
 	}
