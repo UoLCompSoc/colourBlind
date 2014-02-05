@@ -131,14 +131,17 @@ public class Level {
 						firstY = y;
 
 					}
+
 					platformColourCache.put(c, platColour);
 				} else {
 					if (samePlatform) {
 						// come to the end of the platform
 						samePlatform = false;
 						platColour = null;
+
 						firstCells.put(first, platformWidth);
 						firstCellCoords.put(first, new Vector2(firstX, firstY));
+
 						platformWidth = 0;
 						firstX = 0;
 						firstY = 0;
@@ -231,7 +234,8 @@ public class Level {
 	}
 
 	public void renderColourTexture(OrthographicCamera camera) {
-
+		platformColourFrameBuffer.begin();
+		platformColourFrameBuffer.end();
 	}
 
 	public CBColour getPlatformCellColour(Cell c) {

@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -25,13 +27,17 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class ColourBlindGame implements ApplicationListener {
+	public static boolean		DEBUG				= false;
+
 	private Player				player				= null;
 	private Level				level				= null;
 	private OrthographicCamera	camera				= null;
 
 	public static final int		LIGHT_SIZE			= 16;
 	public static final float	UPSCALE				= 1.0f;
-	public static final boolean	USE_FANCY_LIGHTS	= false;
+
+	public static final boolean	USE_FANCY_LIGHTS	= true;
+	public static final boolean	USE_SOUND			= false;
 
 	private FrameBuffer			occludersFBO		= null;
 	private TextureRegion		occluders			= null;
@@ -50,11 +56,27 @@ public class ColourBlindGame implements ApplicationListener {
 
 	private BGM					bgm					= null;
 
+	private FPSLogger			fpsLogger			= null;
+	private int					fpsPrintCounter		= 0;
+
+	public ColourBlindGame() {
+		this(false);
+	}
+
+	public ColourBlindGame(boolean debug) {
+		ColourBlindGame.DEBUG = debug;
+	}
+
 	@Override
 	public void create() {
 		ShaderProgram.pedantic = false;
-		Gdx.app.setLogLevel(Application.LOG_NONE);
-		// Gdx.app.setLogLevel(Application.LOG_DEBUG);
+
+		if (DEBUG) {
+			Gdx.app.setLogLevel(Application.LOG_DEBUG);
+			fpsLogger = new FPSLogger();
+		} else {
+			Gdx.app.setLogLevel(Application.LOG_NONE);
+		}
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(),
@@ -67,6 +89,7 @@ public class ColourBlindGame implements ApplicationListener {
 			String fname = "level" + (levelCount + 1) + ".tmx";
 			String pathName = "data/maps/" + fname;
 			FileHandle fh = Gdx.files.internal(pathName);
+
 			if (fh.exists()) {
 				levelList.add(fname);
 
@@ -77,7 +100,7 @@ public class ColourBlindGame implements ApplicationListener {
 		}
 
 		if (levelList.size() == 0) {
-			throw new GdxRuntimeException("Couldn't load any levels :(");
+			throw new GdxRuntimeException("Couldn't load any levels.");
 		}
 
 		Gdx.app.debug("LEVEL_COUNT", "" + levelCount + " levels loaded.");
@@ -105,6 +128,8 @@ public class ColourBlindGame implements ApplicationListener {
 		if (shadowMapShader.isCompiled() == false) {
 			throw new GdxRuntimeException("Failed to compile lights1.glslf:\n"
 					+ shadowMapShader.getLog());
+		} else {
+			Gdx.app.debug("LOAD_SHADERS", "Compiled shadow map shader.");
 		}
 
 		shadowRenderShader = new ShaderProgram(VERTEX_SHADER, Gdx.files
@@ -113,6 +138,8 @@ public class ColourBlindGame implements ApplicationListener {
 		if (shadowRenderShader.isCompiled() == false) {
 			throw new GdxRuntimeException("Failed to compile lights2.glslf:\n"
 					+ shadowRenderShader.getLog());
+		} else {
+			Gdx.app.debug("LOAD_SHADERS", "Compiled shadow render shader.");
 		}
 
 		colourShader = new ShaderProgram(Gdx.files.internal(
@@ -122,11 +149,18 @@ public class ColourBlindGame implements ApplicationListener {
 		if (colourShader.isCompiled() == false) {
 			throw new GdxRuntimeException("Failed to compile lights3.glslf:\n"
 					+ colourShader.getLog());
+		} else {
+			Gdx.app.debug("LOAD_SHADERS", "Compiled colour shader.");
 		}
 
-		bgm = new BGM();
-		bgm.create();
-		bgm.play();
+		if (USE_SOUND) {
+			bgm = new BGM();
+			bgm.create();
+			Gdx.app.debug("LOAD_SOUND", "Loaded sounds correctly, playing.");
+			bgm.play();
+		} else {
+			Gdx.app.debug("LOAD_SOUND", "Sounds disabled.");
+		}
 	}
 
 	@Override
@@ -138,8 +172,21 @@ public class ColourBlindGame implements ApplicationListener {
 		SpriteBatch sb = level.renderer.getSpriteBatch();
 		sb.setShader(null);
 
+		if (DEBUG) {
+			fpsPrintCounter++;
+
+			if (fpsPrintCounter >= 100) {
+				fpsLogger.log();
+				fpsPrintCounter = 0;
+			} else if (Gdx.input.isKeyPressed(Keys.F1)) {
+				fpsLogger.log();
+			}
+		}
+
 		if (player.update(level, deltaTime)) {
+			// true if player went through a door
 			if (nextLevel()) {
+				// true if there's no next level
 				// we're done
 				Gdx.app.exit();
 			} else {
@@ -158,6 +205,7 @@ public class ColourBlindGame implements ApplicationListener {
 				// OCCLUDER -----------------------------------
 				occludersFBO.begin();
 
+				sb.setShader(shadowMapShader);
 				Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
 				Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -170,7 +218,6 @@ public class ColourBlindGame implements ApplicationListener {
 				camera.update();
 
 				sb.setProjectionMatrix(camera.combined);
-				sb.setShader(shadowMapShader);
 
 				level.renderAll(camera);
 
@@ -181,8 +228,6 @@ public class ColourBlindGame implements ApplicationListener {
 
 				Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
 				Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-				sb.setShader(shadowMapShader);
 
 				sb.begin();
 				shadowMapShader.setUniformf("resolution", LIGHT_SIZE,
@@ -253,17 +298,11 @@ public class ColourBlindGame implements ApplicationListener {
 		colourShader.setUniformi("u_colourTex", 3);
 
 		level.renderPlatforms(camera);
-		sb.end();
-
-		sb.setShader(null);
-		sb.begin();
-		level.renderDoor(camera);
 
 		sb.end();
 
-		sb.setShader(colourShader);
-
 		sb.begin();
+
 		colourShader.setUniformf("platform", 0.0f);
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
 				.toGdxColour());
@@ -272,6 +311,10 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.end();
 
 		sb.setShader(null);
+		sb.begin();
+		level.renderDoor(camera);
+
+		sb.end();
 	}
 
 	// returns true to exit
