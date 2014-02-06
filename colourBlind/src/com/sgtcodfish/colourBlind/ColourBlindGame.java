@@ -27,44 +27,53 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class ColourBlindGame implements ApplicationListener {
-	public static boolean		DEBUG				= false;
+	private static ColourBlindGame	instance			= null;
+	public static boolean			DEBUG				= false;
 
-	private Player				player				= null;
-	private Level				level				= null;
-	private OrthographicCamera	camera				= null;
+	private Player					player				= null;
+	private Level					level				= null;
+	private OrthographicCamera		camera				= null;
 
-	public static final int		LIGHT_SIZE			= 16;
-	public static final float	UPSCALE				= 1.0f;
+	public static final int			LIGHT_SIZE			= 16;
+	public static final float		UPSCALE				= 1.0f;
 
-	public static final boolean	USE_FANCY_LIGHTS	= true;
-	public static final boolean	USE_SOUND			= false;
+	public static final boolean		USE_FANCY_LIGHTS	= false;
+	public static final boolean		USE_SOUND			= false;
 
-	private FrameBuffer			occludersFBO		= null;
-	private TextureRegion		occluders			= null;
-	private FrameBuffer			shadowMapFBO		= null;
-	private Texture				shadowMapTex		= null;
-	private TextureRegion		shadowMap1D			= null;
-	private ShaderProgram		shadowMapShader		= null;
-	private ShaderProgram		shadowRenderShader	= null;
-	private ShaderProgram		colourShader		= null;
+	private FrameBuffer				occludersFBO		= null;
+	private TextureRegion			occluders			= null;
+	private FrameBuffer				shadowMapFBO		= null;
+	private Texture					shadowMapTex		= null;
+	private TextureRegion			shadowMap1D			= null;
+	private ShaderProgram			shadowMapShader		= null;
+	private ShaderProgram			shadowRenderShader	= null;
+	private ShaderProgram			colourShader		= null;
 
-	private String				VERTEX_SHADER		= null;
+	private String					VERTEX_SHADER		= null;
 
-	private int					currentLevel		= 0;
-	private int					levelCount			= 0;
-	private ArrayList<String>	levelList			= null;
+	private int						currentLevel		= 0;
+	private int						levelCount			= 0;
+	private ArrayList<String>		levelList			= null;
 
-	private BGM					bgm					= null;
+	private BGM						bgm					= null;
 
-	private FPSLogger			fpsLogger			= null;
-	private int					fpsPrintCounter		= 0;
+	private FPSLogger				fpsLogger			= null;
+	private int						fpsPrintCounter		= 0;
 
 	public ColourBlindGame() {
 		this(false);
 	}
 
 	public ColourBlindGame(boolean debug) {
+		if (instance == null) {
+			ColourBlindGame.instance = this;
+		} else {
+			throw new GdxRuntimeException("Trying to instantiate a new"
+					+ "instance of ColourBlindGame when one already exists.");
+		}
+
 		ColourBlindGame.DEBUG = debug;
+
 	}
 
 	@Override
@@ -284,22 +293,10 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.setShader(null);
 		sb.begin();
 		level.renderLevel(camera);
+		level.renderDoor(camera);
 		sb.end();
 
-		sb.begin();
-		sb.setShader(colourShader);
-		colourShader.setUniformf("flashLightSize", (float) LIGHT_SIZE / 2);
-		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f
-				: 0.0f));
-		colourShader.setUniformf("platform", 1.0f);
-		colourShader.setUniformf("lightCoord", player.position.x,
-				player.position.y);
-		Gdx.gl20.glActiveTexture(GL20.GL_TEXTURE0);
-		colourShader.setUniformi("u_colourTex", 3);
-
-		level.renderPlatforms(camera);
-
-		sb.end();
+		level.renderPlatforms(camera, colourShader);
 
 		sb.begin();
 
@@ -307,12 +304,6 @@ public class ColourBlindGame implements ApplicationListener {
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
 				.toGdxColour());
 		player.render(sb);
-
-		sb.end();
-
-		sb.setShader(null);
-		sb.begin();
-		level.renderDoor(camera);
 
 		sb.end();
 	}
@@ -362,5 +353,17 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void resume() {
+	}
+
+	public static ColourBlindGame getInstance() {
+		return instance;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public Level getLevel() {
+		return level;
 	}
 }

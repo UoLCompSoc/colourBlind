@@ -1,12 +1,15 @@
 package com.sgtcodfish.colourBlind;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -14,7 +17,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -27,12 +29,19 @@ public class Level {
 	public OrthogonalTiledMapRenderer	renderer					= null;
 	private TiledMap					tiledMap					= null;
 
-	private HashMap<Cell, CBColour>		platformColourCache			= null;
-	private HashMap<Cell, Integer>		firstCells					= null;
-	private HashMap<Cell, Vector2>		firstCellCoords				= null;
+	// private HashMap<Cell, CBColour> platformColourCache = null;
+	// private HashMap<Cell, Integer> firstCells = null;
+	// private HashMap<Cell, Vector3> firstCellCoords = null;
+	private ArrayList<Platform>			platforms					= null;
 
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
+
+	private HashMap<Cell, CBColour>		platformColourCache			= null;
+
+	private TextureRegion				platformStartTexture		= null;
+	private TextureRegion				platformMiddleTexture		= null;
+	private TextureRegion				platformEndTexture			= null;
 
 	public Rectangle					doorRect					= null;
 
@@ -94,19 +103,62 @@ public class Level {
 		TILE_WIDTH = (int) platformLayer.getTileWidth();
 		TILE_HEIGHT = (int) platformLayer.getTileHeight();
 
-		// create a hashmap of all the cells in the platforms level
-		// and cache them for checking colours quickly in collisions code
-		boolean samePlatform = false;
-		CBColour platColour = null;
-		int platformsFound = 0;
-		int platformWidth = 0;
-		Cell first = null;
+		platforms = new ArrayList<Platform>();
 
-		firstCells = new HashMap<Cell, Integer>();
-		firstCellCoords = new HashMap<TiledMapTileLayer.Cell, Vector2>();
+		// initialise the platform textures
+		boolean foundPlat = false;
+		int width = 1;
+
+		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
+			for (int x = 0; x < WIDTH_IN_TILES; x++) {
+				Cell c = platformLayer.getCell(x, y);
+
+				if (!foundPlat) {
+					if (c != null) {
+						Gdx.app.debug("LEVEL_LOAD",
+								"Platform textures coming from platform starting at (x,y)=("
+										+ x + "," + y + ")");
+						// found a platform now
+						foundPlat = true;
+						platformStartTexture = c.getTile().getTextureRegion();
+						platformMiddleTexture = platformLayer.getCell(x + 1, y)
+								.getTile().getTextureRegion();
+						width = 1;
+					}
+				} else {
+					// found a platform already, looking for the end
+					if (c == null) {
+						Gdx.app.debug("LEVEL_LOAD", "Texture platform width = "
+								+ width);
+						platformEndTexture = platformLayer.getCell(x - 1, y)
+								.getTile().getTextureRegion();
+						break;
+					} else {
+						width++;
+					}
+				}
+			}
+
+			if (foundPlat)
+				break;
+		}
+
+		if (platformStartTexture == null || platformEndTexture == null
+				|| platformMiddleTexture == null) {
+			throw new GdxRuntimeException(
+					"Failed to initialise platform textures for level "
+							+ levelFileName
+							+ "; likely malformed first platform.");
+		}
+
+		/*
+		 * Set up the platform colours; this could be done more efficiently, no
+		 * doubt, but for the sake of readability I'll just do several for
+		 * loops.
+		 */
 		platformColourCache = new HashMap<Cell, CBColour>();
-
-		int firstX = 0, firstY = 0;
+		CBColour platColour = null;
+		boolean samePlatform = false;
 
 		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
 			for (int x = 0; x < WIDTH_IN_TILES; x++) {
@@ -115,44 +167,25 @@ public class Level {
 				if (c != null) {
 					// found a cell, start of platform?
 					if (!samePlatform) {
-						first = c;
 						samePlatform = true;
-						platformsFound++;
-						platformWidth += 1;
 						platColour = new CBColour();
 						Gdx.app.debug(
 								"LEVEL_LOAD",
-								"Platform found, colour will be "
+								"Platform found, colour: "
 										+ CBColour.GameColour
 												.asString(platColour
 														.getColour()) + ".");
-
-						firstX = x;
-						firstY = y;
-
 					}
 
 					platformColourCache.put(c, platColour);
-				} else {
-					if (samePlatform) {
-						// come to the end of the platform
-						samePlatform = false;
-						platColour = null;
-
-						firstCells.put(first, platformWidth);
-						firstCellCoords.put(first, new Vector2(firstX, firstY));
-
-						platformWidth = 0;
-						firstX = 0;
-						firstY = 0;
-					}
 				}
 			}
 		}
 
-		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platformsFound
+		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platforms.size()
 				+ " platforms.");
 
+		// load the door
 		int startX = -1, startY = -1, endX = -1, endY = -1;
 		boolean found = false;
 
@@ -203,12 +236,30 @@ public class Level {
 	 * 
 	 * @param camera
 	 *            The camera in which to render.
+	 * 
+	 * @param shader
+	 *            The shader program to use to render the platforms. This must
 	 */
-	public void renderPlatforms(OrthographicCamera camera) {
+	public void renderPlatforms(OrthographicCamera camera, ShaderProgram shader) {
+		SpriteBatch sb = renderer.getSpriteBatch();
+
 		renderer.setView(camera);
-		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
-				.getLayers().get("platforms");
-		renderer.renderTileLayer(platformLayer);
+		sb.setShader(shader);
+
+		Player player = ColourBlindGame.getInstance().getPlayer();
+
+		shader.setUniformf("flashLightSize",
+				(float) ColourBlindGame.LIGHT_SIZE / 2);
+		shader.setUniformf("flashLight", (player.isLightOn() ? 1.0f : 0.0f));
+		shader.setUniformf("platform", 1.0f);
+		shader.setUniformf("lightCoord", player.position.x, player.position.y);
+
+		for (Platform p : platforms) {
+			p.render(sb, camera, shader);
+		}
+		// TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
+		// .getLayers().get("platforms");
+		// renderer.renderTileLayer(platformLayer);
 	}
 
 	/**
@@ -236,10 +287,6 @@ public class Level {
 	public void renderColourTexture(OrthographicCamera camera) {
 		platformColourFrameBuffer.begin();
 		platformColourFrameBuffer.end();
-	}
-
-	public CBColour getPlatformCellColour(Cell c) {
-		return platformColourCache.get(c);
 	}
 
 	/**
@@ -280,15 +327,33 @@ public class Level {
 		return (foundCount > 0 ? tiles : null);
 	}
 
+	public CBColour getPlatformCellColour(Cell c) {
+		return platformColourCache.get(c);
+	}
+
+	public TextureRegion getPlatformStartTexture() {
+		return platformStartTexture;
+	}
+
+	public TextureRegion getPlatformMiddleTexture() {
+		return platformMiddleTexture;
+	}
+
+	public TextureRegion getPlatformEndTexture() {
+		return platformEndTexture;
+	}
+
 	public void dispose() {
 		platformColourTexture = null;
 		if (platformColourFrameBuffer != null) {
 			platformColourFrameBuffer.dispose();
 		}
-		firstCellCoords.clear();
-		firstCells.clear();
-		platformColourCache.clear();
-		platformColourCache = null;
+
+		platformStartTexture = null;
+		platformEndTexture = null;
+		platformMiddleTexture = null;
+
+		platforms.clear();
 		if (tiledMap != null)
 			tiledMap.dispose();
 		if (renderer != null)

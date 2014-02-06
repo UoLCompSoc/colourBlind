@@ -18,9 +18,9 @@ void main(void) {
 	 */
 	
 	if(platform > 0.5) {
-		gl_FragColor = texColour+vec4(vColour.rgb, 0.0);
+		gl_FragColor = clamp(vColour + texColour, 0.0, 1.0);
 	} else if(texColour.a > 0.5) {
-		gl_FragColor = vColour + inputColour;
+		gl_FragColor = vec4(inputColour.rgb,texColour.a);
 	} else {
 		gl_FragColor = texColour;
 	}
