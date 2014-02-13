@@ -2,24 +2,44 @@ package com.sgtcodfish.colourBlind;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.math.Vector2;
 
 public class Platform {
-	private CBColour	colour		= null;
-	private Cell		startCell	= null;
-	private int			cellWidth	= 0;
+	private CBColour	colour			= null;
+	private int			widthInCells	= 0;
+	private Vector2		startPos		= null;
 
-	public Platform(CBColour nColour, Cell nStartCell, int nCellWidth) {
+	public Platform(CBColour nColour, Vector2 nStartPos, int nCellWidth) {
 		setColour(nColour);
-		setStartCell(nStartCell);
-		setCellWidth(nCellWidth);
+		setStartPosition(nStartPos);
+		setWidthInCells(nCellWidth);
 	}
 
-	public void render(SpriteBatch sb, OrthographicCamera camera,
+	public void render(Level level, SpriteBatch sb, OrthographicCamera camera,
 			ShaderProgram shader) {
-		sb.begin();
 		shader.setUniformf("platformColour", colour.toGdxColour());
+		sb.begin();
+
+		for (int i = 0; i < widthInCells; i++) {
+			TextureRegion tr = null;
+			if (i == 0) {
+				// start
+				tr = level.getPlatformStartTexture();
+			} else if (i == widthInCells - 1) {
+				// end
+				tr = level.getPlatformEndTexture();
+			} else {
+				// middle
+				tr = level.getPlatformMiddleTexture();
+			}
+
+			sb.draw(tr, startPos.x * i, startPos.y, 0.0f, 0.0f,
+					tr.getRegionWidth(), tr.getRegionHeight(),
+					1.0f / level.WIDTH_IN_TILES, 1.0f / level.HEIGHT_IN_TILES,
+					0.0f);
+		}
 
 		sb.end();
 	}
@@ -32,19 +52,28 @@ public class Platform {
 		this.colour = colour;
 	}
 
-	public Cell getStartCell() {
-		return startCell;
+	public Vector2 getStartPosition() {
+		return startPos;
 	}
 
-	public void setStartCell(Cell startCell) {
-		this.startCell = startCell;
+	public void setStartPosition(Vector2 nv) {
+		startPos = nv.cpy();
 	}
 
-	public int getCellWidth() {
-		return cellWidth;
+	public void setStartPosition(float x, float y) {
+		if (startPos == null) {
+			startPos = new Vector2(x, y);
+		} else {
+			startPos.x = x;
+			startPos.y = y;
+		}
 	}
 
-	public void setCellWidth(int cellWidth) {
-		this.cellWidth = cellWidth;
+	public int getWidthInCells() {
+		return widthInCells;
+	}
+
+	public void setWidthInCells(int cellWidth) {
+		this.widthInCells = cellWidth;
 	}
 }

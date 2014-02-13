@@ -2,6 +2,7 @@
 
 uniform vec4 inputColour;
 uniform float platform;
+uniform vec4 platformColour;
 
 varying vec2 vTexCoord0;
 varying vec4 vColour;
@@ -18,7 +19,7 @@ void main(void) {
 	 */
 	
 	if(platform > 0.5) {
-		gl_FragColor = clamp(vColour + texColour, 0.0, 1.0);
+		gl_FragColor = platformColour;
 	} else if(texColour.a > 0.5) {
 		gl_FragColor = vec4(inputColour.rgb,texColour.a);
 	} else {

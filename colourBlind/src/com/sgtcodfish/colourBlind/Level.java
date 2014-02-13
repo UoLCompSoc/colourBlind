@@ -17,6 +17,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -139,8 +140,9 @@ public class Level {
 				}
 			}
 
-			if (foundPlat)
+			if (foundPlat) {
 				break;
+			}
 		}
 
 		if (platformStartTexture == null || platformEndTexture == null
@@ -158,7 +160,11 @@ public class Level {
 		 */
 		platformColourCache = new HashMap<Cell, CBColour>();
 		CBColour platColour = null;
+		Cell startCell = null;
 		boolean samePlatform = false;
+		int platCount = 0;
+		int platWidth = 0;
+		Vector2 platStart = null;
 
 		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
 			for (int x = 0; x < WIDTH_IN_TILES; x++) {
@@ -167,8 +173,12 @@ public class Level {
 				if (c != null) {
 					// found a cell, start of platform?
 					if (!samePlatform) {
+						startCell = c;
 						samePlatform = true;
 						platColour = new CBColour();
+						platStart = new Vector2();
+						platStart.x = (float) x;
+						platStart.y = (float) y;
 						Gdx.app.debug(
 								"LEVEL_LOAD",
 								"Platform found, colour: "
@@ -177,10 +187,27 @@ public class Level {
 														.getColour()) + ".");
 					}
 
+					platWidth++;
 					platformColourCache.put(c, platColour);
+				} else {
+					if (samePlatform) {
+						// come to the end of a platform
+						samePlatform = false;
+						platCount++;
+						platforms.add(new Platform(platColour, platStart,
+								platWidth));
+
+						startCell = null;
+						platWidth = 0;
+						platColour = null;
+						platStart = null;
+					}
 				}
 			}
 		}
+
+		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platCount
+				+ " platform colours.");
 
 		Gdx.app.debug("LEVEL_LOAD", "Loaded a total of " + platforms.size()
 				+ " platforms.");
@@ -232,7 +259,7 @@ public class Level {
 
 	/**
 	 * Renders only the platforms on the level, which is the layer called
-	 * "platforms". REQUIRES a call to SpriteBatch.begin() prior to calling.
+	 * "platforms".
 	 * 
 	 * @param camera
 	 *            The camera in which to render.
@@ -255,7 +282,7 @@ public class Level {
 		shader.setUniformf("lightCoord", player.position.x, player.position.y);
 
 		for (Platform p : platforms) {
-			p.render(sb, camera, shader);
+			p.render(this, sb, camera, shader);
 		}
 		// TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
 		// .getLayers().get("platforms");
