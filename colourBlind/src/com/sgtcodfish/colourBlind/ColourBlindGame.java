@@ -178,7 +178,7 @@ public class ColourBlindGame implements ApplicationListener {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
-		SpriteBatch sb = level.renderer.getSpriteBatch();
+		SpriteBatch sb = (SpriteBatch) level.renderer.getSpriteBatch();
 		sb.setShader(null);
 
 		if (DEBUG) {
@@ -291,6 +291,7 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.update();
 		sb.setProjectionMatrix(camera.combined);
 		sb.setShader(null);
+
 		sb.begin();
 		level.renderLevel(camera);
 		level.renderDoor(camera);
@@ -300,6 +301,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 		sb.begin();
 
+		sb.setShader(null);
 		colourShader.setUniformf("platform", 0.0f);
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
 				.toGdxColour());

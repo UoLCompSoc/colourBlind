@@ -268,7 +268,7 @@ public class Level {
 	 *            The shader program to use to render the platforms. This must
 	 */
 	public void renderPlatforms(OrthographicCamera camera, ShaderProgram shader) {
-		SpriteBatch sb = renderer.getSpriteBatch();
+		SpriteBatch sb = (SpriteBatch) renderer.getSpriteBatch();
 
 		renderer.setView(camera);
 		sb.setShader(shader);
