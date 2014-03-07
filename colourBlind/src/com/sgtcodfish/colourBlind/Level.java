@@ -195,7 +195,7 @@ public class Level {
 		// for (Platform p : platforms) {
 		// p.render(this, sb, camera, shader);
 		// }
-
+		renderer.getSpriteBatch().setColor(1.0f, 1.0f, 0.0f, 1.0f);
 		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
 				.getLayers().get("platforms");
 		renderer.renderTileLayer(platformLayer);
