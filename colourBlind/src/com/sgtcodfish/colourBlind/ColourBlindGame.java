@@ -52,7 +52,6 @@ public class ColourBlindGame implements ApplicationListener {
 	private String					VERTEX_SHADER		= null;
 
 	private int						currentLevel		= 0;
-	private int						levelCount			= 0;
 	private ArrayList<String>		levelList			= null;
 
 	private BGM						bgm					= null;
@@ -95,14 +94,12 @@ public class ColourBlindGame implements ApplicationListener {
 
 		levelList = new ArrayList<String>();
 		while (true) {
-			String fname = "level" + (levelCount + 1) + ".tmx";
+			String fname = "level" + (levelList.size() + 1) + ".tmx";
 			String pathName = "data/maps/" + fname;
 			FileHandle fh = Gdx.files.internal(pathName);
 
 			if (fh.exists()) {
 				levelList.add(fname);
-
-				levelCount++;
 			} else {
 				break;
 			}
@@ -112,7 +109,7 @@ public class ColourBlindGame implements ApplicationListener {
 			throw new GdxRuntimeException("Couldn't load any levels.");
 		}
 
-		Gdx.app.debug("LEVEL_COUNT", "" + levelCount + " levels loaded.");
+		Gdx.app.debug("LEVEL_COUNT", "" + levelList.size() + " levels loaded.");
 		level = new Level(levelList.get(currentLevel));
 
 		occludersFBO = new FrameBuffer(Format.RGBA8888, LIGHT_SIZE, LIGHT_SIZE,
@@ -295,12 +292,10 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.begin();
 		level.renderLevel(camera);
 		level.renderDoor(camera);
+		level.renderPlatforms(camera, colourShader);
 		sb.end();
 
-		level.renderPlatforms(camera, colourShader);
-
 		sb.begin();
-
 		sb.setShader(null);
 		colourShader.setUniformf("platform", 0.0f);
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
@@ -313,7 +308,7 @@ public class ColourBlindGame implements ApplicationListener {
 	// returns true to exit
 	public boolean nextLevel() {
 		currentLevel++;
-		if (currentLevel >= levelCount) {
+		if (currentLevel >= levelList.size()) {
 			// we're done
 			return true;
 		} else {

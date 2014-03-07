@@ -1,4 +1,4 @@
-package com.sgtcodfish.colourBlind;
+package com.sgtcodfish.colourBlind.tiled;
 
 import static com.badlogic.gdx.graphics.g2d.Batch.C1;
 import static com.badlogic.gdx.graphics.g2d.Batch.C2;
@@ -29,6 +29,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.sgtcodfish.colourBlind.CBColour;
 
 public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 	private float[]	vertices	= new float[20];
@@ -77,7 +78,7 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 		for (int row = row1; row < row2; row++) {
 			float x = xStart;
 			for (int col = col1; col < col2; col++) {
-				final CBCell cell = (CBCell) layer.getCell(col, row);
+				final Cell cell = layer.getCell(col, row);
 				if (cell == null) {
 					x += layerTileWidth;
 					continue;
@@ -101,27 +102,42 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 					float u2 = region.getU2();
 					float v2 = region.getV();
 
+					// TODO: FIX DIRTY HACK
+					if (cell instanceof CBCell) {
+						final CBColour platCol = ((CBCell) cell).getColour();
+						final float platF = Color.toFloatBits(
+								platCol.toGdxColour().r,
+								platCol.toGdxColour().g,
+								platCol.toGdxColour().b,
+								platCol.toGdxColour().a * layer.getOpacity());
+						vertices[C1] = platF;
+						vertices[C2] = platF;
+						vertices[C3] = platF;
+						vertices[C4] = platF;
+					} else {
+						vertices[C1] = color;
+						vertices[C2] = color;
+						vertices[C3] = color;
+						vertices[C4] = color;
+					}
+
 					vertices[X1] = x1;
 					vertices[Y1] = y1;
-					vertices[C1] = color;
 					vertices[U1] = u1;
 					vertices[V1] = v1;
 
 					vertices[X2] = x1;
 					vertices[Y2] = y2;
-					vertices[C2] = color;
 					vertices[U2] = u1;
 					vertices[V2] = v2;
 
 					vertices[X3] = x2;
 					vertices[Y3] = y2;
-					vertices[C3] = color;
 					vertices[U3] = u2;
 					vertices[V3] = v2;
 
 					vertices[X4] = x2;
 					vertices[Y4] = y1;
-					vertices[C4] = color;
 					vertices[U4] = u2;
 					vertices[V4] = v1;
 

@@ -1,9 +1,11 @@
-package com.sgtcodfish.colourBlind;
+package com.sgtcodfish.colourBlind.tiled;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.maps.tiled.TmxMapHelper;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -26,6 +28,7 @@ public class CBTmxMapLoader extends TmxMapLoader {
 	 */
 	@Override
 	protected void loadTileLayer(TiledMap map, Element element) {
+		Gdx.app.debug("CB_TMXLOADER", "In CBTmxMapLoader->loadTileLayer");
 		if (element.getName().equals("layer")) {
 			String name = element.getAttribute("name", null);
 			int width = element.getIntAttribute("width", 0);
@@ -40,6 +43,12 @@ public class CBTmxMapLoader extends TmxMapLoader {
 			layer.setVisible(visible);
 			layer.setOpacity(opacity);
 			layer.setName(name);
+			boolean loadingPlatforms = false;
+
+			if (layer.getName().equals("platforms")) {
+				Gdx.app.debug("CB_TMXLOADER", "Loading platforms layer");
+				loadingPlatforms = true;
+			}
 
 			int[] ids = TmxMapHelper.getTileIds(element, width, height);
 			TiledMapTileSets tilesets = map.getTileSets();
@@ -52,15 +61,14 @@ public class CBTmxMapLoader extends TmxMapLoader {
 
 					TiledMapTile tile = tilesets.getTile(id & ~MASK_CLEAR);
 					if (tile != null) {
-						CBCell cell = (CBCell) createTileLayerCell(
-								flipHorizontally, flipVertically,
-								flipDiagonally);
+						Cell cell = createTileLayerCell(flipHorizontally,
+								flipVertically, flipDiagonally);
 						cell.setTile(tile);
 
 						// If we're loading the platform level, we also add a
 						// random colour to it.
-						if (layer.getName() == "platforms") {
-							cell.setColour(new CBColour());
+						if (loadingPlatforms) {
+							// cell.setColour(new CBColour());
 						}
 
 						layer.setCell(x, yUp ? height - 1 - y : y, cell);

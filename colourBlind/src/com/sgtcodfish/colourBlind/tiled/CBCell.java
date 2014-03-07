@@ -1,6 +1,7 @@
-package com.sgtcodfish.colourBlind;
+package com.sgtcodfish.colourBlind.tiled;
 
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.sgtcodfish.colourBlind.CBColour;
 
 public class CBCell extends Cell {
 	protected CBColour	colour	= null;
