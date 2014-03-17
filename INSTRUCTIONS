@@ -1,9 +1,13 @@
 HOW TO PLAY
 ===========
 
-Simply unzip the zip file and then double click Colour Blind - Game.jar
+Windows
+-------
+Simply download colourBlind_1.0.jar and double click to play.
 
-You need to unzip the whole file first though!
+Other
+-----
+If the above doesn't work, you might need to run java -jar colourBlind_1.0.jar on the command line.
 
 Requires a recent JVM installed; if you have Java installed you probably have this.
 

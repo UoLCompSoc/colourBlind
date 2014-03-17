@@ -3,6 +3,8 @@ Global Game Jam
 
 Univerity of Leicester Global Game Jam entry: Colour Blind
 
+For instructions on how to play, read the INSTRUCTIONS file.
+
 Participants:
 
 Ashley Davis (SgtCoDFish) - https://github.com/SgtCoDFish
