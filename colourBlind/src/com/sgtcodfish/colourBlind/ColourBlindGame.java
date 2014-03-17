@@ -7,6 +7,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -38,7 +39,7 @@ public class ColourBlindGame implements ApplicationListener {
 	public static final float		UPSCALE				= 1.0f;
 
 	public static final boolean		USE_FANCY_LIGHTS	= false;
-	public static final boolean		USE_SOUND			= false;
+	public static final boolean		USE_SOUND			= true;
 
 	private FrameBuffer				occludersFBO		= null;
 	private TextureRegion			occluders			= null;
@@ -167,9 +168,6 @@ public class ColourBlindGame implements ApplicationListener {
 		} else {
 			Gdx.app.debug("LOAD_SOUND", "Sounds disabled.");
 		}
-
-		Gdx.gl20.glEnable(GL20.GL_BLEND);
-		Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	@Override
@@ -283,28 +281,37 @@ public class ColourBlindGame implements ApplicationListener {
 		}
 
 		// REGULAR DRAWING ----------
-		// sb.setColor(Color.WHITE);
-
 		camera.setToOrtho(false, level.WIDTH_IN_TILES, level.HEIGHT_IN_TILES);
 		camera.position.x = player.position.x;
 		camera.position.y = player.position.y;
 		camera.update();
-		sb.setProjectionMatrix(camera.combined);
-		sb.setShader(null);
 
 		sb.begin();
+		sb.setShader(null);
+		sb.setColor(Color.WHITE);
+		sb.setProjectionMatrix(camera.combined);
 		level.renderLevel(camera);
 		level.renderDoor(camera);
-		level.renderPlatforms(camera, colourShader);
+		sb.end();
+
+		final Color c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+		sb.setColor(Color.RED);
+		sb.begin();
+		sb.setShader(colourShader);
+		colourShader.setUniformf("flashLightSize", ((float) LIGHT_SIZE / 2.0f));
+		colourShader.setUniformf("platform", 1.0f);
+		colourShader.setUniformf("lightCoord", player.position);
+		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f
+				: 0.0f));
+		colourShader.setUniformf("platformColour", c);
+		level.renderPlatforms(camera);
 		sb.end();
 
 		sb.begin();
-		sb.setShader(null);
 		colourShader.setUniformf("platform", 0.0f);
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
 				.toGdxColour());
 		player.render(sb);
-
 		sb.end();
 	}
 

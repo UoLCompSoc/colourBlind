@@ -7,16 +7,15 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.tiled.CBOrthogonalTiledMapRenderer;
-import com.sgtcodfish.colourBlind.tiled.CBTmxMapLoader;
 
 /**
  * Holds a single level, loaded from a TMX file created using Tiled.
@@ -30,7 +29,7 @@ public class Level {
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
 
-	private HashMap<Cell, CBColour>		platformColourCache			= null;
+	public HashMap<Cell, CBColour>		platformColourCache			= null;
 
 	public Rectangle					doorRect					= null;
 
@@ -45,12 +44,16 @@ public class Level {
 	 *            The file name of the level to load.
 	 */
 	public Level(String levelFileName) {
+		// needs to be done before we load; ideally it wouldn't be this hacky
+		// but I want to get it done
+		platformColourCache = new HashMap<Cell, CBColour>();
+
 		String fullFileName = "data/maps/" + levelFileName;
 		FileHandle levelHandle = Gdx.files.internal(fullFileName);
 
 		Gdx.app.debug("LEVEL_LOAD", "Level file \"" + levelFileName
 				+ "\" exists: " + levelHandle.exists());
-		tiledMap = new CBTmxMapLoader().load(fullFileName);
+		tiledMap = new TmxMapLoader().load(fullFileName);
 		renderer = new CBOrthogonalTiledMapRenderer(tiledMap, 1.0f / 32.0f);
 
 		MapLayers layers = tiledMap.getLayers();
@@ -97,7 +100,7 @@ public class Level {
 		 * doubt, but for the sake of readability I'll just do several for
 		 * loops.
 		 */
-		platformColourCache = new HashMap<Cell, CBColour>();
+
 		CBColour platColour = null;
 		boolean samePlatform = false;
 
@@ -177,24 +180,7 @@ public class Level {
 	 * @param shader
 	 *            The shader program to use to render the platforms. This must
 	 */
-	public void renderPlatforms(OrthographicCamera camera, ShaderProgram shader) {
-		// SpriteBatch sb = (SpriteBatch) renderer.getSpriteBatch();
-		//
-		// renderer.setView(camera);
-		// sb.setShader(shader);
-		//
-		// Player player = ColourBlindGame.getInstance().getPlayer();
-		//
-		// shader.setUniformf("flashLightSize",
-		// (float) ColourBlindGame.LIGHT_SIZE / 2);
-		// shader.setUniformf("flashLight", (player.isLightOn() ? 1.0f : 0.0f));
-		// shader.setUniformf("platform", 1.0f);
-		// shader.setUniformf("lightCoord", player.position.x,
-		// player.position.y);
-		//
-		// for (Platform p : platforms) {
-		// p.render(this, sb, camera, shader);
-		// }
+	public void renderPlatforms(OrthographicCamera camera) {
 		renderer.getSpriteBatch().setColor(1.0f, 1.0f, 0.0f, 1.0f);
 		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
 				.getLayers().get("platforms");

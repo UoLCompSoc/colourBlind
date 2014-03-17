@@ -18,20 +18,12 @@ uniform float platform; // 1.0 if we're drawing platforms, 0.0 otherwise.
 uniform vec4 platformColour;
  
 varying vec2 vTexCoord0;
+varying vec2 vPosition;
 varying vec4 vColour;
  
 void main() {
-	if(flashLight > 0.5
-	&& platform > 0.5
-	&& distance(lightCoord, a_position.xy) <= flashLightSize) {
-		// if distance between this point and the centre of light is smaller
-		// than threshold, reveal the point's true colour, or else black texture.
-		
-		vColour = vec4(platformColour.rgb, 1.0);
-	} else {
-		vColour = vec4(0.0, 0.0, 0.0, 0.0);
-	}
-	
+    vPosition = a_position.xy;
 	vTexCoord0 = a_texCoord0;
+	vColour = a_color;
 	gl_Position = u_projTrans * a_position;
 }
