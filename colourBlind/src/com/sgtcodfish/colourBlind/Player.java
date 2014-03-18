@@ -65,8 +65,7 @@ public class Player {
 	public static final float	FLASHLIGHT_COOLDOWN_DURATION	= 2.0f;
 
 	public Player() {
-		FileHandle playerImage = Gdx.files
-				.internal("data/RaySprites/RaySprites.png");
+		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
 		Gdx.app.debug("PLAYER_LOAD",
 				"Player image exists = " + playerImage.exists());
 		texture = new Texture(playerImage);

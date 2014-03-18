@@ -6,7 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class BGM {
-	Music	music	= null;
+	private Music	music	= null;
 
 	public void create() {
 		String fname = "data/audio/Techno_Dream.mp3";
@@ -26,19 +26,31 @@ public class BGM {
 		}
 	}
 
+	public void toggle() {
+		if (music != null) {
+			if (music.isPlaying()) {
+				music.pause();
+			} else {
+				music.play();
+			}
+		}
+	}
+
 	public void play() {
-		if (music != null)
+		if (music != null) {
 			music.play();
+		}
 	}
 
 	public void pause() {
-		if (music != null)
+		if (music != null) {
 			music.pause();
+		}
 	}
 
 	public void dispose() {
-		if (music != null)
+		if (music != null) {
 			music.dispose();
+		}
 	}
-
 }

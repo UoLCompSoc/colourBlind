@@ -39,7 +39,8 @@ public class ColourBlindGame implements ApplicationListener {
 	public static final float		UPSCALE				= 1.0f;
 
 	public static final boolean		USE_FANCY_LIGHTS	= false;
-	public static final boolean		USE_SOUND			= true;
+	private static boolean			USE_SOUND			= true;
+	// note that USE_SOUND is only followed at load-time
 
 	private FrameBuffer				occludersFBO		= null;
 	private TextureRegion			occluders			= null;
@@ -62,10 +63,10 @@ public class ColourBlindGame implements ApplicationListener {
 	private int						fpsPrintCounter		= 0;
 
 	public ColourBlindGame() {
-		this(false);
+		this(false, true);
 	}
 
-	public ColourBlindGame(boolean debug) {
+	public ColourBlindGame(boolean debug, boolean playSound) {
 		if (instance == null) {
 			ColourBlindGame.instance = this;
 		} else {
@@ -74,7 +75,7 @@ public class ColourBlindGame implements ApplicationListener {
 		}
 
 		ColourBlindGame.DEBUG = debug;
-
+		ColourBlindGame.USE_SOUND = playSound;
 	}
 
 	@Override
@@ -161,8 +162,9 @@ public class ColourBlindGame implements ApplicationListener {
 			Gdx.app.debug("LOAD_SHADERS", "Compiled colour shader.");
 		}
 
+		bgm = new BGM();
 		if (USE_SOUND) {
-			bgm = new BGM();
+
 			bgm.create();
 			Gdx.app.debug("LOAD_SOUND", "Loaded sounds correctly, playing.");
 			bgm.play();
@@ -189,6 +191,10 @@ public class ColourBlindGame implements ApplicationListener {
 			} else if (Gdx.input.isKeyPressed(Keys.F1)) {
 				fpsLogger.log();
 			}
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.F5)) {
+			bgm.toggle();
 		}
 
 		if (player.update(level, deltaTime)) {
@@ -342,6 +348,8 @@ public class ColourBlindGame implements ApplicationListener {
 			shadowMapTex.dispose();
 		if (shadowMapFBO != null)
 			shadowMapFBO.dispose();
+		if (bgm != null)
+			bgm.dispose();
 		if (player != null)
 			player.dispose();
 		if (level != null)

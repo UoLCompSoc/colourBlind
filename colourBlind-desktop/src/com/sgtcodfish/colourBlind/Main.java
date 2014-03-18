@@ -11,6 +11,17 @@ public class Main {
 		cfg.width = 800;
 		cfg.height = 600;
 
-		new LwjglApplication(new ColourBlindGame(true), cfg);
+		boolean debug = false;
+		boolean playSound = true;
+
+		for (String s : args) {
+			if ("--debug".equals(s)) {
+				debug = true;
+			} else if ("--shut-up".equals(s) || "--quiet".equals(s)) {
+				playSound = false;
+			}
+		}
+
+		new LwjglApplication(new ColourBlindGame(debug, playSound), cfg);
 	}
 }

@@ -3,14 +3,9 @@
  <tileset firstgid="1" name="TileSet" tilewidth="32" tileheight="32">
   <image source="../TileSet.png" width="128" height="256"/>
  </tileset>
- <layer name="bg" width="35" height="60">
-  <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20ND6AAAAAAAAAAAL4MINAAAQ==
-  </data>
- </layer>
  <layer name="platforms" width="35" height="60">
   <data encoding="base64" compression="zlib">
-   eJztmFEOgCAMQ7mIev9b6o+RGEWCbA77XsK/addRSQlgXKbtzA1n+eJj4RW51/hXxzkfirqpz83VjrTU4W4nK2jvrTX0g105HqqesWfisnvz5Ifq7EakNU/KXecvqHvodZeU3mpUtI4A3SEetZ0hKmTbF6sMq7+VWaLSM/ivOVDIU2mu6RrgyQr54BLf
+   eJztmEsKgDAMRHsR9f63VBeiiJ9STZow70H3ZSaTDi0FIC/DcsaGM/W4LHzi6DX+1XHOh6Ju6nNztSMtdbjbyQrae2sN/8GuzIeqZ+yZuGzevPmhOrsRac0THuZHua+ueL0lT381KlpHgO4Qj9rOEBWy7YtVhtX/yixR6Rl04h31PPXqGsygJjNuvBJn
   </data>
  </layer>
  <layer name="level" width="35" height="60">
