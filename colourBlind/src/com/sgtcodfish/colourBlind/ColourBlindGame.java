@@ -46,6 +46,7 @@ public class ColourBlindGame implements ApplicationListener {
 	private FrameBuffer				shadowMapFBO		= null;
 	private Texture					shadowMapTex		= null;
 	private TextureRegion			shadowMap1D			= null;
+
 	private ShaderProgram			shadowMapShader		= null;
 	private ShaderProgram			shadowRenderShader	= null;
 	private ShaderProgram			colourShader		= null;
@@ -294,8 +295,6 @@ public class ColourBlindGame implements ApplicationListener {
 		level.renderDoor(camera);
 		sb.end();
 
-		final Color c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-		sb.setColor(Color.RED);
 		sb.begin();
 		sb.setShader(colourShader);
 		colourShader.setUniformf("flashLightSize", ((float) LIGHT_SIZE / 2.0f));
@@ -303,7 +302,6 @@ public class ColourBlindGame implements ApplicationListener {
 		colourShader.setUniformf("lightCoord", player.position);
 		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f
 				: 0.0f));
-		colourShader.setUniformf("platformColour", c);
 		level.renderPlatforms(camera);
 		sb.end();
 

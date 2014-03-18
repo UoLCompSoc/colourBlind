@@ -161,7 +161,7 @@ public class Player {
 		} else if (Gdx.input.isButtonPressed(0)
 				|| Gdx.input.isKeyPressed(Keys.E)) {
 			// LMB -> Turn on light if we can
-			// only get here if not on and not on cooldown
+			// only get here if not on and not on coolstateTimedown
 			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
 			flashLightOnTime = 0.01f;
 		}

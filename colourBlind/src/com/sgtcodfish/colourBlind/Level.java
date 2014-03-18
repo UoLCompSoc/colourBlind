@@ -5,8 +5,6 @@ import java.util.HashMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -23,18 +21,15 @@ import com.sgtcodfish.colourBlind.tiled.CBOrthogonalTiledMapRenderer;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class Level {
-	public CBOrthogonalTiledMapRenderer	renderer					= null;
-	private TiledMap					tiledMap					= null;
+	public CBOrthogonalTiledMapRenderer	renderer			= null;
+	private TiledMap					tiledMap			= null;
 
 	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
 			TILE_WIDTH, TILE_HEIGHT;
 
-	public HashMap<Cell, CBColour>		platformColourCache			= null;
+	public HashMap<Cell, CBColour>		platformColourCache	= null;
 
-	public Rectangle					doorRect					= null;
-
-	public FrameBuffer					platformColourFrameBuffer	= null;
-	public TextureRegion				platformColourTexture		= null;
+	public Rectangle					doorRect			= null;
 
 	/**
 	 * Creates a new level, loading the tmx file called "levelFileName" in the
@@ -209,11 +204,6 @@ public class Level {
 		renderer.renderTileLayer(doorLayer);
 	}
 
-	public void renderColourTexture(OrthographicCamera camera) {
-		platformColourFrameBuffer.begin();
-		platformColourFrameBuffer.end();
-	}
-
 	/**
 	 * Returns an array of rectangles representing the tiles in the specified
 	 * ranges. Useful for collision.
@@ -257,11 +247,6 @@ public class Level {
 	}
 
 	public void dispose() {
-		platformColourTexture = null;
-		if (platformColourFrameBuffer != null) {
-			platformColourFrameBuffer.dispose();
-		}
-
 		if (tiledMap != null)
 			tiledMap.dispose();
 		if (renderer != null)

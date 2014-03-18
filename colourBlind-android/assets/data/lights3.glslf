@@ -11,7 +11,6 @@ uniform float flashLight; // 1.0 if the flash light is on, 0.0 otherwise
 uniform float flashLightSize; // the size of the flash light's beam.
 uniform vec2 lightCoord; // coordinates of the light source if the flash light is on
 uniform float platform; // 1.0 if we're drawing platforms, 0.0 otherwise.
-uniform vec4 platformColour;
 uniform vec4 inputColour;
 uniform sampler2D u_texture;
 
@@ -29,13 +28,15 @@ void main(void) {
     
 	if(platform > 0.5) {
         if(flashLight > 0.5) {
-            float dist = distance(lightCoord, vPosition.xy);
+            float dist = distance(lightCoord.xy, vPosition.xy);
             float perc = (flashLightSize-dist)/flashLightSize; 
             if(perc > 0.0) {
                 // if distance between this point and the centre of light is smaller
                 // than threshold, reveal the point's true colour, or else black texture.
                 gl_FragColor = vec4(vColour.rgb * perc, texColour.a);
-            }
+            } else {
+         	   gl_FragColor = texColour;
+       	 	}
         } else {
             gl_FragColor = texColour;
         }
