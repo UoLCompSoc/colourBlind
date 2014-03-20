@@ -65,7 +65,7 @@ public class Player {
 	public static final float	FLASHLIGHT_COOLDOWN_DURATION	= 2.0f;
 
 	public Player() {
-		FileHandle playerImage = Gdx.files.internal("data/RaySpritesSq.png");
+		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
 		Gdx.app.debug("PLAYER_LOAD",
 				"Player image exists = " + playerImage.exists());
 		texture = new Texture(playerImage);
@@ -287,6 +287,10 @@ public class Player {
 	}
 
 	public void render(SpriteBatch batch) {
+		render(batch, position.x, position.y);
+	}
+
+	public void render(SpriteBatch batch, float x, float y) {
 		PlayerState currState = getState();
 		TextureRegion frame = null;
 
@@ -303,8 +307,8 @@ public class Player {
 					(float) PLAYER_HEIGHT);
 
 		} else {
-			batch.draw(frame, position.x + PLAYER_WIDTH, position.y,
-					(float) -PLAYER_WIDTH, (float) PLAYER_HEIGHT);
+			batch.draw(frame, x + PLAYER_WIDTH, y, (float) -PLAYER_WIDTH,
+					(float) PLAYER_HEIGHT);
 
 		}
 	}

@@ -11,7 +11,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -32,6 +35,9 @@ public class ColourBlindGame implements ApplicationListener {
 	public static final int			LIGHT_SIZE		= 16;
 	public static final float		UPSCALE			= 1.0f;
 
+	public static boolean			USE_GLOW		= true;
+	// whether or not to use the glow special effect
+
 	private static boolean			USE_SOUND		= true;
 	// note that USE_SOUND is only followed at load-time;
 	// if the game was loaded without sounds you can't start them
@@ -46,11 +52,20 @@ public class ColourBlindGame implements ApplicationListener {
 	private FPSLogger				fpsLogger		= null;
 	private int						fpsPrintCounter	= 0;
 
+	// for use with glow effect
+	private FrameBuffer				glowBuffer		= null;
+	private FrameBuffer				blurBuffer		= null;
+	private TextureRegion			blurFBORegion	= null;
+
+	private ShaderProgram			blurShader		= null;
+
+	private final float				BLUR_RADIUS		= 5.0f;
+
 	public ColourBlindGame() {
-		this(false, true);
+		this(false, true, false);
 	}
 
-	public ColourBlindGame(boolean debug, boolean playSound) {
+	public ColourBlindGame(boolean debug, boolean playSound, boolean glow) {
 		if (instance == null) {
 			ColourBlindGame.instance = this;
 		} else {
@@ -60,6 +75,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 		ColourBlindGame.DEBUG = debug;
 		ColourBlindGame.USE_SOUND = playSound;
+		ColourBlindGame.USE_GLOW = glow;
 	}
 
 	@Override
@@ -99,16 +115,7 @@ public class ColourBlindGame implements ApplicationListener {
 		Gdx.app.debug("LEVEL_COUNT", "" + levelList.size() + " levels loaded.");
 		level = new Level(levelList.get(currentLevel));
 
-		colourShader = new ShaderProgram(Gdx.files.internal(
-				"data/lights3.glslv").readString(), Gdx.files.internal(
-				"data/lights3.glslf").readString());
-
-		if (colourShader.isCompiled() == false) {
-			throw new GdxRuntimeException("Failed to compile lights3.glslf:\n"
-					+ colourShader.getLog());
-		} else {
-			Gdx.app.debug("LOAD_SHADERS", "Compiled colour shader.");
-		}
+		loadShaders();
 
 		bgm = new BGM();
 		if (USE_SOUND) {
@@ -118,16 +125,28 @@ public class ColourBlindGame implements ApplicationListener {
 		} else {
 			Gdx.app.debug("LOAD_SOUND", "Sounds disabled.");
 		}
+
+		if (USE_GLOW) {
+			glowBuffer = new FrameBuffer(Format.RGBA8888,
+					(int) player.getPlayerWidth(),
+					(int) player.getPlayerHeight(), false);
+			blurBuffer = new FrameBuffer(Format.RGBA8888,
+					(int) player.getPlayerWidth(),
+					(int) player.getPlayerHeight(), false);
+
+			blurFBORegion = new TextureRegion(
+					glowBuffer.getColorBufferTexture());
+			blurFBORegion.flip(false, true);
+		}
 	}
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+		Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 0.5f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
 		SpriteBatch sb = (SpriteBatch) level.renderer.getSpriteBatch();
-		sb.setShader(null);
 
 		if (DEBUG) {
 			fpsPrintCounter++;
@@ -137,6 +156,12 @@ public class ColourBlindGame implements ApplicationListener {
 				fpsPrintCounter = 0;
 			} else if (Gdx.input.isKeyPressed(Keys.F1)) {
 				fpsLogger.log();
+			}
+
+			if (Gdx.input.isKeyPressed(Keys.F10)) {
+				USE_GLOW = !USE_GLOW;
+				Gdx.app.debug("GLOW_CHANGE", "Glow is: "
+						+ (USE_GLOW ? "on." : "off."));
 			}
 		}
 
@@ -151,16 +176,48 @@ public class ColourBlindGame implements ApplicationListener {
 				// true if there's no next level
 				// we're done
 				Gdx.app.exit();
-			} else {
-				// onwards
 			}
 
 			return;
 		}
 
-		camera.position.x = player.position.x;
-		camera.position.y = player.position.y;
-		camera.update();
+		if (USE_GLOW) {
+			glowBuffer.begin();
+			Gdx.gl20.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+			Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+			sb.setShader(null);
+
+			camera.setToOrtho(false, glowBuffer.getWidth(),
+					glowBuffer.getHeight());
+			camera.position.x = player.position.x;
+			camera.position.y = player.position.y;
+
+			sb.setProjectionMatrix(camera.combined);
+
+			sb.begin();
+			sb.setColor(Color.BLACK);
+
+			player.render(sb, 0.0f, 0.0f);
+			sb.flush();
+			glowBuffer.end();
+
+			sb.setShader(blurShader);
+			blurShader.setUniformf("dir", 1.0f, 0.0f);
+			blurShader.setUniformf("playerColour", player.getPlayerColour()
+					.toGdxColour());
+			blurBuffer.begin();
+
+			blurFBORegion.setTexture(glowBuffer.getColorBufferTexture());
+
+			sb.draw(blurFBORegion, 0.0f, 0.0f);
+			sb.flush();
+			// blurShader.setUniformf("dir", 0.0f, 1.0f);
+			// sb.draw(blurFBORegion, 0.0f, 0.0f);
+			// sb.flush();
+			blurBuffer.end();
+			sb.end();
+		}
 
 		camera.setToOrtho(false, level.WIDTH_IN_TILES, level.HEIGHT_IN_TILES);
 		camera.position.x = player.position.x;
@@ -193,6 +250,9 @@ public class ColourBlindGame implements ApplicationListener {
 		colourShader.setUniformf("inputColour", player.getPlayerColour()
 				.toGdxColour());
 		player.render(sb);
+		if (USE_GLOW) {
+			sb.draw(blurFBORegion, player.position.x, player.position.y);
+		}
 		sb.end();
 	}
 
@@ -213,6 +273,10 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void dispose() {
+		if (glowBuffer != null)
+			glowBuffer.dispose();
+		if (blurBuffer != null)
+			blurBuffer.dispose();
 		if (colourShader != null)
 			colourShader.dispose();
 		if (bgm != null)
@@ -221,6 +285,48 @@ public class ColourBlindGame implements ApplicationListener {
 			player.dispose();
 		if (level != null)
 			level.dispose();
+	}
+
+	private void loadShaders() {
+		colourShader = new ShaderProgram(Gdx.files.internal(
+				"data/lights3.glslv").readString(), Gdx.files.internal(
+				"data/lights3.glslf").readString());
+
+		if (colourShader.isCompiled() == false) {
+			throw new GdxRuntimeException(
+					"Failed to compile lights3.glslf/lights3.glslv:\n"
+							+ colourShader.getLog());
+		} else {
+			Gdx.app.debug("LOAD_SHADERS", "Compiled colour shader.");
+
+			if (colourShader.getLog().length() > 0) {
+				Gdx.app.debug("LOAD_SHADERS", "Colour shader log:"
+						+ colourShader.getLog());
+			}
+		}
+
+		if (USE_GLOW) {
+			blurShader = new ShaderProgram(Gdx.files.internal(
+					"data/lights3.glslv").readString(), Gdx.files.internal(
+					"data/blur.glslf").readString());
+			if (!blurShader.isCompiled()) {
+				throw new GdxRuntimeException(
+						"Failed to compile blur shader:\n"
+								+ blurShader.getLog());
+			} else {
+				Gdx.app.debug("LOAD_SHADERS", "Compiled blur shader");
+
+				if (blurShader.getLog().length() > 0) {
+					Gdx.app.debug("LOAD_SHADERS", "Blur shader log:"
+							+ blurShader.getLog());
+				}
+
+				blurShader.begin();
+				blurShader.setUniformf("dir", 0f, 0f);
+				blurShader.setUniformf("resolution", player.getPlayerWidth());
+				blurShader.setUniformf("radius", BLUR_RADIUS);
+			}
+		}
 	}
 
 	@Override

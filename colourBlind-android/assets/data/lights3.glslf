@@ -19,7 +19,7 @@ varying vec2 vTexCoord0;
 varying vec4 vColour;
 varying vec2 vPosition;
  
-void main(void) {
+void main() {
 	vec4 texColour = texture2D(u_texture, vTexCoord0.st);
 	/*
      * If player: Ignore texture colour except alpha and draw colour

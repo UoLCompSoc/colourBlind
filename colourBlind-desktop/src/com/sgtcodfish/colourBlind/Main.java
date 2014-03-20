@@ -13,15 +13,18 @@ public class Main {
 
 		boolean debug = false;
 		boolean playSound = true;
+		boolean glow = false;
 
 		for (String s : args) {
 			if ("--debug".equals(s)) {
 				debug = true;
 			} else if ("--shut-up".equals(s) || "--quiet".equals(s)) {
 				playSound = false;
+			} else if ("--glow".equals(s)) {
+				glow = true;
 			}
 		}
 
-		new LwjglApplication(new ColourBlindGame(debug, playSound), cfg);
+		new LwjglApplication(new ColourBlindGame(debug, playSound, glow), cfg);
 	}
 }
