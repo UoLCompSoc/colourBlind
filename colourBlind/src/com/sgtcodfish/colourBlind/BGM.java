@@ -9,7 +9,7 @@ public class BGM {
 	private Music	music	= null;
 
 	public void create() {
-		String fname = "data/audio/Techno_Dream.mp3";
+		String fname = "data/audio/Techno_Dream.ogg";
 		FileHandle fh = Gdx.files.internal(fname);
 		if (fh.exists()) {
 			Gdx.app.debug("AUDIO_LOAD", "Audio file exists: " + fname);

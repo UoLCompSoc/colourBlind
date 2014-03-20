@@ -65,7 +65,7 @@ public class Player {
 	public static final float	FLASHLIGHT_COOLDOWN_DURATION	= 2.0f;
 
 	public Player() {
-		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
+		FileHandle playerImage = Gdx.files.internal("data/RaySpritesSq.png");
 		Gdx.app.debug("PLAYER_LOAD",
 				"Player image exists = " + playerImage.exists());
 		texture = new Texture(playerImage);
@@ -164,7 +164,7 @@ public class Player {
 		} else if (Gdx.input.isButtonPressed(0)
 				|| Gdx.input.isKeyPressed(Keys.E)) {
 			// LMB -> Turn on light if we can
-			// only get here if not on and not on coolstateTimedown
+			// only get here if not on and not on cooldown
 			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
 			flashLightOnTime = 0.01f;
 		}
@@ -277,7 +277,7 @@ public class Player {
 		}
 
 		position.add(velocity);
-		velocity.x *= (RUN_VELOCITY / 10);
+		velocity.x *= (RUN_VELOCITY / 10.0f);
 
 		if (position.y < -2.0f) {
 			position.set(1, 3);
@@ -327,6 +327,11 @@ public class Player {
 
 	public boolean isLightOnCooldown() {
 		return (flashLightCooldown > 0.0f);
+	}
+
+	public void resetFlashLight() {
+		flashLightCooldown = -1.0f;
+		flashLightOnTime = -1.0f;
 	}
 
 	public void dispose() {

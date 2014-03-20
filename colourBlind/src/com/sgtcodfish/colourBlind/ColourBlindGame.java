@@ -122,7 +122,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(0.25f, 0.25f, 0.25f, 0.25f);
+		Gdx.gl.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
@@ -145,6 +145,7 @@ public class ColourBlindGame implements ApplicationListener {
 		}
 
 		if (player.update(level, deltaTime)) {
+			player.resetFlashLight();
 			// true if player went through a door
 			if (nextLevel()) {
 				// true if there's no next level

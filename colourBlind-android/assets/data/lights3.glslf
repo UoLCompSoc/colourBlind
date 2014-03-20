@@ -13,6 +13,7 @@ uniform vec2 lightCoord; // coordinates of the light source if the flash light i
 uniform float platform; // 1.0 if we're drawing platforms, 0.0 otherwise.
 uniform vec4 inputColour;
 uniform sampler2D u_texture;
+uniform float bias;
 
 varying vec2 vTexCoord0;
 varying vec4 vColour;
