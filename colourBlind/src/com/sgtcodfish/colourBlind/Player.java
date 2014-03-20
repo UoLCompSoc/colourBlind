@@ -127,13 +127,17 @@ public class Player {
 		// j - GREEN
 		// k - BLUE
 		// l - YELLOW
-		if (Gdx.input.isKeyPressed(Keys.I)) {
+		if (Gdx.input.isKeyPressed(Keys.I)
+				|| Gdx.input.isKeyPressed(Keys.NUM_1)) {
 			setPlayerColour(CBColour.GameColour.RED);
-		} else if (Gdx.input.isKeyPressed(Keys.J)) {
+		} else if (Gdx.input.isKeyPressed(Keys.J)
+				|| Gdx.input.isKeyPressed(Keys.NUM_2)) {
 			setPlayerColour(CBColour.GameColour.GREEN);
-		} else if (Gdx.input.isKeyPressed(Keys.K)) {
+		} else if (Gdx.input.isKeyPressed(Keys.K)
+				|| Gdx.input.isKeyPressed(Keys.NUM_3)) {
 			setPlayerColour(CBColour.GameColour.BLUE);
-		} else if (Gdx.input.isKeyPressed(Keys.L)) {
+		} else if (Gdx.input.isKeyPressed(Keys.L)
+				|| Gdx.input.isKeyPressed(Keys.NUM_4)) {
 			setPlayerColour(CBColour.GameColour.YELLOW);
 		}
 

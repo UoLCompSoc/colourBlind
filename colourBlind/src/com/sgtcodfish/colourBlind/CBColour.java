@@ -28,7 +28,24 @@ public class CBColour {
 			case YELLOW:
 				return "YELLOW";
 			default:
-				return "Whattheflyingfuck?";
+				return "Wat";
+			}
+		}
+
+		public static int toNumber(GameColour gc) {
+			switch (gc) {
+			case RED:
+				return 0;
+			case BLUE:
+				return 1;
+			case GREEN:
+				return 2;
+			case YELLOW:
+				return 3;
+			case BLACK:
+				return 5;
+			default:
+				return -1;
 			}
 		}
 	}
@@ -116,6 +133,34 @@ public class CBColour {
 
 		default:
 			return null;
+		}
+	}
+
+	/**
+	 * For cycling through numbers, maps red->blue->green->yellow->red.
+	 * 
+	 * @return The next colour
+	 */
+	public void nextColour() {
+		switch (col) {
+		case RED:
+			col = GameColour.BLUE;
+			break;
+		case BLUE:
+			col = GameColour.GREEN;
+			break;
+		case GREEN:
+			col = GameColour.YELLOW;
+			break;
+		case YELLOW:
+			col = GameColour.RED;
+			break;
+		case BLACK:
+			col = GameColour.BLACK;
+			break;
+		default:
+			throw new GdxRuntimeException(
+					"Call to nextColour() with invalid colour input.");
 		}
 	}
 
