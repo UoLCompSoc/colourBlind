@@ -325,6 +325,7 @@ public class ColourBlindGame implements ApplicationListener {
 				blurShader.setUniformf("dir", 0f, 0f);
 				blurShader.setUniformf("resolution", player.getPlayerWidth());
 				blurShader.setUniformf("radius", BLUR_RADIUS);
+				blurShader.end();
 			}
 		}
 	}
