@@ -177,10 +177,8 @@ public class ColourBlindGame implements ApplicationListener {
 
 		if (USE_GLOW) {
 			glowBuffer.begin();
-			Gdx.gl20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			Gdx.gl20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-			sb.setShader(null);
 
 			camera.setToOrtho(false, glowBuffer.getWidth(),
 					glowBuffer.getHeight());
@@ -188,12 +186,13 @@ public class ColourBlindGame implements ApplicationListener {
 			sb.setProjectionMatrix(camera.combined);
 
 			sb.begin();
+			sb.setShader(null);
 			player.render(sb);
 			sb.end();
 			glowBuffer.end();
 		}
 
-		Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 0.5f);
+		Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		camera.setToOrtho(false, level.WIDTH_IN_TILES, level.HEIGHT_IN_TILES);
@@ -225,6 +224,8 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.begin();
 		if (USE_GLOW) {
 			sb.setShader(blurShader);
+			blurShader.setUniformf("radius", BLUR_RADIUS);
+			blurShader.setUniformf("resolution", player.getPlayerWidth());
 			blurShader.setUniformf("timeVal", deltaTime);
 			blurShader.setUniformf("inputColour", player.getPlayerColour()
 					.toGdxColour());

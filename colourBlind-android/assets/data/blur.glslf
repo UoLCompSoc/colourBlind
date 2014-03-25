@@ -81,5 +81,5 @@ void main() {
     }
 
     vec4 col = vec4(sum*inputColour.rgb, alpha);
-    gl_FragColor = col;
+    gl_FragColor = inputColour;
 }
