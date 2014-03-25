@@ -38,47 +38,48 @@
     #define LOWP
 #endif
 
-varying vec4 vColor;
+#define PI 3.141592563
+
+varying LOWP vec4 vColor;
 varying vec2 vTexCoord0;
 
 uniform sampler2D u_texture;
 uniform float resolution;
 uniform float radius;
-uniform vec2 dir;
+uniform float timeVal;
+uniform vec4 inputColour;
 
 void main() {
     //this will be our RGBA sum
-    vec4 sum = vec4(0.0);
+    float sum = 0.0;
 
-    //our original texcoord for this fragment
     vec2 tc = vTexCoord0;
     float alpha = texture2D(u_texture, tc).a;
 
     //the amount to blur, i.e. how far off center to sample from 
     //1.0 -> blur by one pixel
     //2.0 -> blur by two pixels, etc.
-    float blur = radius/resolution; 
-
-    //the direction of our blur
-    //(1.0, 0.0) -> x-axis blur
-    //(0.0, 1.0) -> y-axis blur
-    float hstep = dir.x;
-    float vstep = dir.y;
+    float t = timeVal;
+    float sinVal = (sin(t*4.0) + 1.0);
+    sinVal = clamp(sinVal, 0.0, 1.0);
+    float blur = radius/resolution * sinVal;
 
     //apply blurring, using a 9-tap filter with predefined gaussian weights
 
-    sum += texture2D(u_texture, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
-    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;
-    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur*hstep, tc.y - 2.0*blur*vstep)) * 0.1216216216;
-    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur*hstep, tc.y - 1.0*blur*vstep)) * 0.1945945946;
+	if(alpha > 0.5){
+	    sum += texture2D(u_texture, vec2(tc.x - 4.0*blur, tc.y)).a * 0.0162162162;
+	    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur, tc.y)).a * 0.0540540541;
+	    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur, tc.y)).a * 0.1216216216;
+	    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur, tc.y)).a * 0.1945945946;
+	
+	    sum += texture2D(u_texture, vec2(tc.x, tc.y)).a * 0.2270270270;
+	
+	    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur, tc.y)).a * 0.1945945946;
+	    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur, tc.y)).a * 0.1216216216;
+	    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur, tc.y)).a * 0.0540540541;
+	    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur, tc.y)).a * 0.0162162162;
+    }
 
-    sum += texture2D(u_texture, vec2(tc.x, tc.y)) * 0.2270270270;
-
-    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur*hstep, tc.y + 1.0*blur*vstep)) * 0.1945945946;
-    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur*hstep, tc.y + 2.0*blur*vstep)) * 0.1216216216;
-    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;
-    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;
-
-    //discard alpha for our simple demo, multiply by vertex color and return
-    gl_FragColor = vColor * vec4(sum.rgb, alpha);
+    vec4 col = vec4(sum*inputColour.rgb, alpha);
+    gl_FragColor = col;
 }
