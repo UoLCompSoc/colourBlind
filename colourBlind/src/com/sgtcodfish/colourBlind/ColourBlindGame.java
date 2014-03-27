@@ -84,7 +84,7 @@ public class ColourBlindGame implements ApplicationListener {
 		if (DEBUG) {
 			Gdx.app.setLogLevel(Application.LOG_DEBUG);
 			fpsLogger = new FPSLogger();
-			ShaderProgram.pedantic = true;
+			// ShaderProgram.pedantic = true;
 		} else {
 			Gdx.app.setLogLevel(Application.LOG_NONE);
 		}
@@ -127,6 +127,7 @@ public class ColourBlindGame implements ApplicationListener {
 		}
 
 		if (USE_GLOW) {
+			Gdx.app.debug("GLOW_ENABLED", "The glow effect has been enabled.");
 			glowBuffer = new FrameBuffer(Format.RGBA8888,
 					(int) player.getPlayerWidth(),
 					(int) player.getPlayerHeight(), false);
@@ -182,12 +183,12 @@ public class ColourBlindGame implements ApplicationListener {
 
 			camera.setToOrtho(false, glowBuffer.getWidth(),
 					glowBuffer.getHeight());
-
+			camera.update();
 			sb.setProjectionMatrix(camera.combined);
 
 			sb.begin();
 			sb.setShader(null);
-			player.render(sb);
+			player.render(sb, 0.0f, 0.0f);
 			sb.end();
 			glowBuffer.end();
 		}
@@ -231,6 +232,7 @@ public class ColourBlindGame implements ApplicationListener {
 					.toGdxColour());
 			sb.draw(blurFBORegion, player.position.x, player.position.y);
 		} else {
+			sb.setShader(colourShader);
 			colourShader.setUniformf("platform", 0.0f);
 			colourShader.setUniformf("inputColour", player.getPlayerColour()
 					.toGdxColour());

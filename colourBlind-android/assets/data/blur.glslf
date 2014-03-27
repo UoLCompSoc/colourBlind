@@ -50,8 +50,7 @@ uniform float timeVal;
 uniform vec4 inputColour;
 
 void main() {
-    //this will be our RGBA sum
-    float sum = 0.0;
+    vec4 sum = vec4(0.0);
 
     vec2 tc = vTexCoord0;
     float alpha = texture2D(u_texture, tc).a;
@@ -63,23 +62,19 @@ void main() {
     float sinVal = (sin(t*4.0) + 1.0);
     sinVal = clamp(sinVal, 0.0, 1.0);
     float blur = radius/resolution * sinVal;
+    
+    sum += texture2D(u_texture, vec2(tc.x - 4.0*blur, tc.y)) * 0.0162162162;
+    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur, tc.y)) * 0.0540540541;
+    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur, tc.y)) * 0.1216216216;
+    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur, tc.y)) * 0.1945945946;
 
-    //apply blurring, using a 9-tap filter with predefined gaussian weights
+    sum += texture2D(u_texture, vec2(tc.x, tc.y)) * 0.2270270270;
 
-	if(alpha > 0.5){
-	    sum += texture2D(u_texture, vec2(tc.x - 4.0*blur, tc.y)).a * 0.0162162162;
-	    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur, tc.y)).a * 0.0540540541;
-	    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur, tc.y)).a * 0.1216216216;
-	    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur, tc.y)).a * 0.1945945946;
-	
-	    sum += texture2D(u_texture, vec2(tc.x, tc.y)).a * 0.2270270270;
-	
-	    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur, tc.y)).a * 0.1945945946;
-	    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur, tc.y)).a * 0.1216216216;
-	    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur, tc.y)).a * 0.0540540541;
-	    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur, tc.y)).a * 0.0162162162;
-    }
+    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur, tc.y)) * 0.1945945946;
+    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur, tc.y)) * 0.1216216216;
+    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur, tc.y)) * 0.0540540541;
+    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur, tc.y)) * 0.0162162162;
 
-    vec4 col = vec4(sum*inputColour.rgb, alpha);
-    gl_FragColor = inputColour;
+    vec4 col = vec4(sum.r * inputColour.r, sum.g * inputColour.g, sum.b * inputColour.b, alpha);
+    gl_FragColor = vec4(sum.rgb, alpha);
 }

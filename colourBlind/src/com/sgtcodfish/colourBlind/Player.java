@@ -123,10 +123,6 @@ public class Player {
 		}
 
 		// handle colour changes - we default to RED because why not
-		// i - RED
-		// j - GREEN
-		// k - BLUE
-		// l - YELLOW
 		if (Gdx.input.isKeyPressed(Keys.I)
 				|| Gdx.input.isKeyPressed(Keys.NUM_1)) {
 			setPlayerColour(CBColour.GameColour.RED);
@@ -302,15 +298,9 @@ public class Player {
 			frame = stand.getKeyFrame(stateTime);
 		}
 
-		if (!facingLeft) {
-			batch.draw(frame, position.x, position.y, (float) PLAYER_WIDTH,
-					(float) PLAYER_HEIGHT);
-
-		} else {
-			batch.draw(frame, x + PLAYER_WIDTH, y, (float) -PLAYER_WIDTH,
-					(float) PLAYER_HEIGHT);
-
-		}
+		batch.draw(frame, x + (facingLeft ? (float) PLAYER_WIDTH : 0.0f), y,
+				(float) PLAYER_WIDTH * (facingLeft ? -1.0f : 1.0f),
+				(float) PLAYER_HEIGHT);
 	}
 
 	private void handleYCollision() {
