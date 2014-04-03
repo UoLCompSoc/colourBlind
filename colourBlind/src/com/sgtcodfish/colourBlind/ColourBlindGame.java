@@ -128,9 +128,9 @@ public class ColourBlindGame implements ApplicationListener {
 
 		if (USE_GLOW) {
 			Gdx.app.debug("GLOW_ENABLED", "The glow effect has been enabled.");
-			glowBuffer = new FrameBuffer(Format.RGBA8888,
-					(int) player.getPlayerWidth(),
-					(int) player.getPlayerHeight(), false);
+			/* TODO: Change these magic numbers */
+			glowBuffer = new FrameBuffer(Format.RGBA8888, (int) 128, (int) 128,
+					false);
 
 			blurFBORegion = new TextureRegion(
 					glowBuffer.getColorBufferTexture());

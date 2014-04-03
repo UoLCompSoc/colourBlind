@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -69,6 +70,7 @@ public class Player {
 		Gdx.app.debug("PLAYER_LOAD",
 				"Player image exists = " + playerImage.exists());
 		texture = new Texture(playerImage);
+		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
 		TextureRegion[] regions = TextureRegion.split(texture,
 				PLAYER_TEXTURE_WIDTH, PLAYER_TEXTURE_HEIGHT)[0];
