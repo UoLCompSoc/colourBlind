@@ -26,5 +26,5 @@ public class Main {
 		}
 
 		new LwjglApplication(new ColourBlindGame(debug, playSound, glow), cfg);
-	} 
+	}
 }

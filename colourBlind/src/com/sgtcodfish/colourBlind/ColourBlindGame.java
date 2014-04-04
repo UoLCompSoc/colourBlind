@@ -2,6 +2,7 @@ package com.sgtcodfish.colourBlind;
 
 import java.util.ArrayList;
 
+import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -25,6 +26,8 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class ColourBlindGame implements ApplicationListener {
+	public World					world			= null;
+
 	private static ColourBlindGame	instance		= null;
 	public static boolean			DEBUG			= false;
 
@@ -50,7 +53,6 @@ public class ColourBlindGame implements ApplicationListener {
 	private BGM						bgm				= null;
 
 	private FPSLogger				fpsLogger		= null;
-	private int						fpsPrintCounter	= 0;
 
 	// for use with glow effect
 	private FrameBuffer				glowBuffer		= null;
@@ -144,12 +146,7 @@ public class ColourBlindGame implements ApplicationListener {
 		SpriteBatch sb = (SpriteBatch) level.renderer.getSpriteBatch();
 
 		if (DEBUG) {
-			fpsPrintCounter++;
-
-			if (fpsPrintCounter >= 100) {
-				fpsLogger.log();
-				fpsPrintCounter = 0;
-			} else if (Gdx.input.isKeyPressed(Keys.F1)) {
+			if (Gdx.input.isKeyPressed(Keys.F1)) {
 				fpsLogger.log();
 			}
 

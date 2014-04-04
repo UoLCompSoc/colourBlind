@@ -1,5 +1,7 @@
 package com.sgtcodfish.colourBlind;
 
+import com.artemis.Entity;
+import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -13,9 +15,15 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.sgtcodfish.colourBlind.components.AnimatedSprite;
+import com.sgtcodfish.colourBlind.components.Coloured;
+import com.sgtcodfish.colourBlind.components.Facing;
+import com.sgtcodfish.colourBlind.components.PlayerInputListener;
+import com.sgtcodfish.colourBlind.components.Position;
+import com.sgtcodfish.colourBlind.components.Velocity;
 
 /**
- * Holds the player.
+ * Holds defaults and helper methods for creating a player Entity.
  * 
  * @author Ashley Davis (SgtCoDFish)
  */
@@ -34,7 +42,8 @@ public class Player {
 	private int					PLAYER_TEXTURE_HEIGHT			= 128;
 
 	public static final Vector2	INITIAL_POSITION				= new Vector2(
-																		3, 2);
+																		3.0f,
+																		2.0f);
 
 	public static final float	PLAYER_SCALE_FACTOR				= 55.0f;
 
@@ -64,6 +73,36 @@ public class Player {
 	private float				flashLightCooldown				= 0.0f;
 	// time in seconds the fl needs to cool down each time
 	public static final float	FLASHLIGHT_COOLDOWN_DURATION	= 2.0f;
+
+	/**
+	 * Creates an entity with typical components one might expect a player
+	 * character to have.
+	 * 
+	 * @param world
+	 *            The world from which to create the entity.
+	 * @param animation
+	 *            The animation used to initialise the {@link AnimatedSprite}
+	 *            component.
+	 * @return A player entity with sensible default values for its components.
+	 */
+	public static Entity createPlayerEntity(World world, Animation animation) {
+		Entity e = world.createEntity();
+
+		Position position = new Position(INITIAL_POSITION);
+		e.addComponent(position);
+
+		Velocity velocity = new Velocity();
+		e.addComponent(velocity);
+
+		e.addComponent(new Facing());
+		e.addComponent(new Coloured());
+		e.addComponent(new PlayerInputListener());
+
+		AnimatedSprite animatedSprite = new AnimatedSprite(animation);
+		e.addComponent(animatedSprite);
+
+		return e;
+	}
 
 	public Player() {
 		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
