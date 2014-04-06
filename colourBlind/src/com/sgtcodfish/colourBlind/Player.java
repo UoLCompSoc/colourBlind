@@ -4,6 +4,7 @@ import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,12 +16,14 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.sgtcodfish.colourBlind.components.AnimatedSprite;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
+import com.sgtcodfish.colourBlind.components.Flashlight;
+import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
 import com.sgtcodfish.colourBlind.components.Position;
 import com.sgtcodfish.colourBlind.components.Velocity;
+import com.sgtcodfish.colourBlind.components.Weight;
 
 /**
  * Holds defaults and helper methods for creating a player Entity.
@@ -41,9 +44,7 @@ public class Player {
 	private int					PLAYER_TEXTURE_WIDTH			= 64;
 	private int					PLAYER_TEXTURE_HEIGHT			= 128;
 
-	public static final Vector2	INITIAL_POSITION				= new Vector2(
-																		3.0f,
-																		2.0f);
+	public static final Vector2	INITIAL_POSITION				= new Vector2(3.0f, 2.0f);
 
 	public static final float	PLAYER_SCALE_FACTOR				= 55.0f;
 
@@ -79,42 +80,40 @@ public class Player {
 	 * character to have.
 	 * 
 	 * @param world
-	 *            The world from which to create the entity.
+	 *        The world from which to create the entity.
 	 * @param animation
-	 *            The animation used to initialise the {@link AnimatedSprite}
-	 *            component.
+	 *        The animation used to initialise the {@link AnimatedSprite}
+	 *        component.
 	 * @return A player entity with sensible default values for its components.
 	 */
 	public static Entity createPlayerEntity(World world, Animation animation) {
 		Entity e = world.createEntity();
 
-		Position position = new Position(INITIAL_POSITION);
-		e.addComponent(position);
+		e.addComponent(new Position(INITIAL_POSITION));
+		e.addComponent(new Velocity());
 
-		Velocity velocity = new Velocity();
-		e.addComponent(velocity);
+		e.addComponent(new PlayerInputListener());
 
 		e.addComponent(new Facing());
 		e.addComponent(new Coloured());
-		e.addComponent(new PlayerInputListener());
+		e.addComponent(new HumanoidAnimatedSprite(stand, run, jump));
 
-		AnimatedSprite animatedSprite = new AnimatedSprite(animation);
-		e.addComponent(animatedSprite);
+		e.addComponent(new Weight());
+
+		e.addComponent(new Flashlight("Player's Flashlight"));
 
 		return e;
 	}
 
 	public Player() {
 		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
-		Gdx.app.debug("PLAYER_LOAD",
-				"Player image exists = " + playerImage.exists());
+		Gdx.app.debug("PLAYER_LOAD", "Player image exists = " + playerImage.exists());
 		texture = new Texture(playerImage);
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
-		TextureRegion[] regions = TextureRegion.split(texture,
-				PLAYER_TEXTURE_WIDTH, PLAYER_TEXTURE_HEIGHT)[0];
-		jump = new Animation(0, regions[3]);
-		stand = new Animation(0, regions[0]);
+		TextureRegion[] regions = TextureRegion.split(texture, PLAYER_TEXTURE_WIDTH, PLAYER_TEXTURE_HEIGHT)[0];
+		jump = new Animation(0.0f, regions[3]);
+		stand = new Animation(0.0f, regions[0]);
 		run = new Animation(0.2f, regions[1], regions[2]);
 		run.setPlayMode(Animation.LOOP_PINGPONG);
 		facingLeft = false;
@@ -131,7 +130,7 @@ public class Player {
 	 * Called each frame to update the position and state of the player
 	 * 
 	 * @param deltaTime
-	 *            The amount of time since the last frame
+	 *        The amount of time since the last frame
 	 */
 	public boolean update(Level level, float deltaTime) {
 		if (deltaTime == 0.0f) {
@@ -147,15 +146,13 @@ public class Player {
 			}
 
 			if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
-				Gdx.app.debug("PLAYER_COORDS", "(X,Y)=(" + position.x + ", "
-						+ position.y + ")");
+				Gdx.app.debug("PLAYER_COORDS", "(X,Y)=(" + position.x + ", " + position.y + ")");
 			}
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP)) {
 			Rectangle playerRectangle = new Rectangle();
-			playerRectangle.set(position.x, position.y, PLAYER_WIDTH,
-					PLAYER_HEIGHT);
+			playerRectangle.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
 
 			if (level.doorRect.contains(playerRectangle)) {
 				Gdx.app.debug("DOOR_OPENED", "Player opened a door!");
@@ -164,17 +161,13 @@ public class Player {
 		}
 
 		// handle colour changes - we default to RED because why not
-		if (Gdx.input.isKeyPressed(Keys.I)
-				|| Gdx.input.isKeyPressed(Keys.NUM_1)) {
+		if (Gdx.input.isKeyPressed(Keys.I) || Gdx.input.isKeyPressed(Keys.NUM_1)) {
 			setPlayerColour(CBColour.GameColour.RED);
-		} else if (Gdx.input.isKeyPressed(Keys.J)
-				|| Gdx.input.isKeyPressed(Keys.NUM_2)) {
+		} else if (Gdx.input.isKeyPressed(Keys.J) || Gdx.input.isKeyPressed(Keys.NUM_2)) {
 			setPlayerColour(CBColour.GameColour.GREEN);
-		} else if (Gdx.input.isKeyPressed(Keys.K)
-				|| Gdx.input.isKeyPressed(Keys.NUM_3)) {
+		} else if (Gdx.input.isKeyPressed(Keys.K) || Gdx.input.isKeyPressed(Keys.NUM_3)) {
 			setPlayerColour(CBColour.GameColour.BLUE);
-		} else if (Gdx.input.isKeyPressed(Keys.L)
-				|| Gdx.input.isKeyPressed(Keys.NUM_4)) {
+		} else if (Gdx.input.isKeyPressed(Keys.L) || Gdx.input.isKeyPressed(Keys.NUM_4)) {
 			setPlayerColour(CBColour.GameColour.YELLOW);
 		}
 
@@ -184,8 +177,7 @@ public class Player {
 			flashLightOnTime += deltaTime;
 
 			if (flashLightOnTime >= FLASHLIGHT_ON_DURATION) {
-				Gdx.app.debug("FLASHLIGHT",
-						"Flashlight time up. Cooldown started.");
+				Gdx.app.debug("FLASHLIGHT", "Flashlight time up. Cooldown started.");
 				flashLightOnTime = -1.0f;
 				flashLightCooldown = FLASHLIGHT_COOLDOWN_DURATION;
 			}
@@ -198,10 +190,9 @@ public class Player {
 				Gdx.app.debug("FLASHLIGHT", "Flashlight finished cooling down.");
 				flashLightCooldown = 0.0f;
 			}
-		} else if (Gdx.input.isButtonPressed(0)
-				|| Gdx.input.isKeyPressed(Keys.E)) {
-			// LMB -> Turn on light if we can
-			// only get here if not on and not on cooldown
+		} else if (Gdx.input.isButtonPressed(Buttons.LEFT) || Gdx.input.isKeyPressed(Keys.E)) {
+			// LMB -> Turn on light if we can only get here if not on and not on
+			// cooldown
 			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
 			flashLightOnTime = 0.01f;
 		}
@@ -227,8 +218,7 @@ public class Player {
 		}
 
 		// handle moving right
-		if (Gdx.input.isKeyPressed(Keys.RIGHT)
-				|| Gdx.input.isKeyPressed(Keys.D)) {
+		if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) {
 			velocity.x = RUN_VELOCITY;
 
 			if (isGrounded) {
@@ -265,11 +255,9 @@ public class Player {
 			ptCoords.x = 0;
 		}
 
-		TiledMapTileLayer levelLayer = (TiledMapTileLayer) level.renderer
-				.getMap().getLayers().get("level");
+		TiledMapTileLayer levelLayer = (TiledMapTileLayer) level.renderer.getMap().getLayers().get("level");
 
-		TiledMapTileLayer platformLayer = (TiledMapTileLayer) level.renderer
-				.getMap().getLayers().get("platforms");
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) level.renderer.getMap().getLayers().get("platforms");
 
 		if (velocity.y > 0.0f) {
 			ptCoords.y += PLAYER_HEIGHT;
@@ -280,18 +268,15 @@ public class Player {
 		}
 
 		// check for y collisions
-		Cell levelCell = levelLayer.getCell(
-				(int) (position.x + (PLAYER_WIDTH / 2)), (int) ptCoords.y);
-		Cell platformCell = platformLayer.getCell((int) position.x,
-				(int) ptCoords.y);
+		Cell levelCell = levelLayer.getCell((int) (position.x + (PLAYER_WIDTH / 2)), (int) ptCoords.y);
+		Cell platformCell = platformLayer.getCell((int) position.x, (int) ptCoords.y);
 
 		if (levelCell != null) {
 			// there's something there in the level, so it must be collidable
 			handleYCollision();
 		} else if (platformCell != null) {
 			// check if we collide with this platform
-			if (this.getPlayerColour().equals(
-					level.getPlatformCellColour(platformCell))) {
+			if (this.getPlayerColour().equals(level.getPlatformCellColour(platformCell))) {
 				// if we get here, we collide since colours match
 				// Gdx.app.debug("PLATFORM_COLLISION",
 				// "Platform collision detected.");
@@ -299,16 +284,13 @@ public class Player {
 			}
 		}
 
-		levelCell = levelLayer.getCell((int) ptCoords.x,
-				(int) (position.y + (PLAYER_HEIGHT / 2)));
-		platformCell = platformLayer
-				.getCell((int) ptCoords.x, (int) position.y);
+		levelCell = levelLayer.getCell((int) ptCoords.x, (int) (position.y + (PLAYER_HEIGHT / 2)));
+		platformCell = platformLayer.getCell((int) ptCoords.x, (int) position.y);
 
 		if (levelCell != null) {
 			handleXCollision();
 		} else if (platformCell != null) {
-			if (this.getPlayerColour().equals(
-					level.getPlatformCellColour(platformCell))) {
+			if (this.getPlayerColour().equals(level.getPlatformCellColour(platformCell))) {
 				handleXCollision();
 			}
 		}
@@ -316,6 +298,7 @@ public class Player {
 		position.add(velocity);
 		velocity.x *= (RUN_VELOCITY / 10.0f);
 
+		// TODO: Saner bounds checking.
 		if (position.y < -2.0f) {
 			position.set(1, 3);
 		}
@@ -339,9 +322,8 @@ public class Player {
 			frame = stand.getKeyFrame(stateTime);
 		}
 
-		batch.draw(frame, x + (facingLeft ? (float) PLAYER_WIDTH : 0.0f), y,
-				(float) PLAYER_WIDTH * (facingLeft ? -1.0f : 1.0f),
-				(float) PLAYER_HEIGHT);
+		batch.draw(frame, x + (facingLeft ? (float) PLAYER_WIDTH : 0.0f), y, (float) PLAYER_WIDTH
+				* (facingLeft ? -1.0f : 1.0f), (float) PLAYER_HEIGHT);
 	}
 
 	private void handleYCollision() {

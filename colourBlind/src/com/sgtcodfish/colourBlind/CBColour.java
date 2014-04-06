@@ -28,7 +28,7 @@ public class CBColour {
 			case YELLOW:
 				return "YELLOW";
 			default:
-				return "Wat";
+				return "Wat"; // We shouldn't get here, really. That'd be bad.
 			}
 		}
 
@@ -80,8 +80,7 @@ public class CBColour {
 		}
 
 		if (ncol == null) {
-			throw new GdxRuntimeException(
-					"Fatal error creating random CBColour.");
+			throw new GdxRuntimeException("Fatal error creating random CBColour.");
 		} else {
 			this.col = ncol;
 		}
@@ -102,7 +101,7 @@ public class CBColour {
 	 * Creates a CBColour with the specified GameColour
 	 * 
 	 * @param col
-	 *            The colour to use.
+	 *        The colour to use.
 	 */
 	public CBColour(GameColour col) {
 		this.col = col;
@@ -110,7 +109,7 @@ public class CBColour {
 
 	/**
 	 * @param a
-	 *            The alpha value of the colour returned.
+	 *        The alpha value of the colour returned.
 	 * @return A Gdx Color associated with this GameColour, with an alpha value
 	 *         of a.
 	 */
@@ -159,8 +158,7 @@ public class CBColour {
 			col = GameColour.BLACK;
 			break;
 		default:
-			throw new GdxRuntimeException(
-					"Call to nextColour() with invalid colour input.");
+			throw new GdxRuntimeException("Call to nextColour() with invalid colour input.");
 		}
 	}
 

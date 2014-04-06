@@ -48,16 +48,15 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 		super(map, unitScale);
 	}
 
-	public CBOrthogonalTiledMapRenderer(TiledMap map, float unitScale,
-			Batch batch) {
+	public CBOrthogonalTiledMapRenderer(TiledMap map, float unitScale, Batch batch) {
 		super(map, unitScale, batch);
 	}
 
 	@Override
 	public void renderTileLayer(TiledMapTileLayer layer) {
 		final Color batchColor = spriteBatch.getColor();
-		final float color = Color.toFloatBits(batchColor.r, batchColor.g,
-				batchColor.b, batchColor.a * layer.getOpacity());
+		final float color = Color.toFloatBits(batchColor.r, batchColor.g, batchColor.b,
+				batchColor.a * layer.getOpacity());
 		final Level level = ColourBlindGame.getInstance().getLevel();
 
 		final int layerWidth = layer.getWidth();
@@ -67,12 +66,12 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 		final float layerTileHeight = layer.getTileHeight() * unitScale;
 
 		final int col1 = Math.max(0, (int) (viewBounds.x / layerTileWidth));
-		final int col2 = Math.min(layerWidth, (int) ((viewBounds.x
-				+ viewBounds.width + layerTileWidth) / layerTileWidth));
+		final int col2 = Math.min(layerWidth,
+				(int) ((viewBounds.x + viewBounds.width + layerTileWidth) / layerTileWidth));
 
 		final int row1 = Math.max(0, (int) (viewBounds.y / layerTileHeight));
-		final int row2 = Math.min(layerHeight, (int) ((viewBounds.y
-				+ viewBounds.height + layerTileHeight) / layerTileHeight));
+		final int row2 = Math.min(layerHeight,
+				(int) ((viewBounds.y + viewBounds.height + layerTileHeight) / layerTileHeight));
 
 		float y = row1 * layerTileHeight;
 		float xStart = col1 * layerTileWidth;
@@ -108,8 +107,7 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 					CBColour cb = level.getPlatformCellColour(cell);
 					if (cb != null) {
 						Color c = cb.toGdxColour();
-						final float platF = Color.toFloatBits(c.r, c.g, c.b,
-								c.a * layer.getOpacity());
+						final float platF = Color.toFloatBits(c.r, c.g, c.b, c.a * layer.getOpacity());
 						vertices[C1] = platF;
 						vertices[C2] = platF;
 						vertices[C3] = platF;

@@ -45,6 +45,14 @@ public class Position extends Component {
 		return position.y;
 	}
 
+	/**
+	 * Calculates a given position vector's tile coordinates, from (0,0) to the
+	 * size of the current level.
+	 * 
+	 * @param pos
+	 *        The vector to be translated into tile coordinates.
+	 * @return A vector containing tile coordinates.
+	 */
 	public static Vector2 inTileCoords(Vector2 pos) {
 		throw new GdxRuntimeException("Error: ECS Position.inTileCoords NYI.");
 	}

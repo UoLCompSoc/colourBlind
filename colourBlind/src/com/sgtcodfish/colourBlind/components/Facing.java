@@ -12,10 +12,20 @@ public class Facing extends Component {
 
 	public boolean				facingLeft		= DEFAULT_FACING;
 
+	/**
+	 * Creates a facing that points in the default direction, which is right by
+	 * default.
+	 */
 	public Facing() {
 		this(DEFAULT_FACING);
 	}
 
+	/**
+	 * Creates a facing in the specified direction.
+	 * 
+	 * @param facingLeft
+	 *        True if facing left, false otherwise.
+	 */
 	public Facing(boolean facingLeft) {
 		this.facingLeft = facingLeft;
 	}

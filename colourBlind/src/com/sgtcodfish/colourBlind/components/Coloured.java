@@ -2,6 +2,7 @@ package com.sgtcodfish.colourBlind.components;
 
 import com.artemis.Component;
 import com.sgtcodfish.colourBlind.CBColour;
+import com.sgtcodfish.colourBlind.CBColour.GameColour;
 
 /**
  * Indicates this Entity has a colour different from its texture colours, e.g.
@@ -10,20 +11,27 @@ import com.sgtcodfish.colourBlind.CBColour;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class Coloured extends Component {
-	public CBColour	colour	= null;
+	public static final CBColour	COLOUR_RED		= new CBColour(GameColour.RED);
+	public static final CBColour	COLOUR_BLUE		= new CBColour(GameColour.BLUE);
+	public static final CBColour	COLOUR_GREEN	= new CBColour(GameColour.GREEN);
+	public static final CBColour	COLOUR_YELLOW	= new CBColour(GameColour.YELLOW);
+
+	public static final CBColour	DEFAULT_COLOUR	= COLOUR_RED;
+
+	public CBColour					colour			= DEFAULT_COLOUR;
 
 	/**
-	 * Creates the Coloured component with a random colour.
+	 * Creates the Coloured component in the DEFAULT_COLOUR.
 	 */
 	public Coloured() {
-		this(new CBColour());
+		this(COLOUR_RED);
 	}
 
 	/**
 	 * Creates the Coloured component with the given colour.
 	 * 
 	 * @param c
-	 *            An initialised CBColour.
+	 *        An initialised CBColour.
 	 */
 	public Coloured(CBColour c) {
 		colour = c;

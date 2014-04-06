@@ -24,8 +24,7 @@ public class Level {
 	public CBOrthogonalTiledMapRenderer	renderer			= null;
 	private TiledMap					tiledMap			= null;
 
-	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES,
-			TILE_WIDTH, TILE_HEIGHT;
+	public final int					HEIGHT_IN_TILES, WIDTH_IN_TILES, TILE_WIDTH, TILE_HEIGHT;
 
 	public HashMap<Cell, CBColour>		platformColourCache	= null;
 
@@ -36,7 +35,7 @@ public class Level {
 	 * "data/maps" directory.
 	 * 
 	 * @param levelFileName
-	 *            The file name of the level to load.
+	 *        The file name of the level to load.
 	 */
 	public Level(String levelFileName) {
 		// needs to be done before we load; ideally it wouldn't be this hacky
@@ -46,8 +45,7 @@ public class Level {
 		String fullFileName = "data/maps/" + levelFileName;
 		FileHandle levelHandle = Gdx.files.internal(fullFileName);
 
-		Gdx.app.debug("LEVEL_LOAD", "Level file \"" + levelFileName
-				+ "\" exists: " + levelHandle.exists());
+		Gdx.app.debug("LEVEL_LOAD", "Level file \"" + levelFileName + "\" exists: " + levelHandle.exists());
 		tiledMap = new TmxMapLoader().load(fullFileName);
 		renderer = new CBOrthogonalTiledMapRenderer(tiledMap, 1.0f / 32.0f);
 
@@ -71,20 +69,15 @@ public class Level {
 
 		if (!(levelLayerFound && platformsLayerFound && doorLayerFound)) {
 			// we're missing a layer, we need to abort
-			Gdx.app.debug("LEVEL_LOAD", "Level layer missing: "
-					+ (!levelLayerFound));
-			Gdx.app.debug("LEVEL_LOAD", "Platforms layer missing: "
-					+ (!platformsLayerFound));
-			Gdx.app.debug("LEVEL_LOAD", "Door layer missing: "
-					+ (!doorLayerFound));
+			Gdx.app.debug("LEVEL_LOAD", "Level layer missing: " + (!levelLayerFound));
+			Gdx.app.debug("LEVEL_LOAD", "Platforms layer missing: " + (!platformsLayerFound));
+			Gdx.app.debug("LEVEL_LOAD", "Door layer missing: " + (!doorLayerFound));
 
-			throw new GdxRuntimeException(
-					"Unable to find all of \"door\", \"level\" and \"platforms\" layers in "
-							+ fullFileName + ".");
+			throw new GdxRuntimeException("Unable to find all of \"door\", \"level\" and \"platforms\" layers in "
+					+ fullFileName + ".");
 		}
 
-		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
-				.getLayers().get("platforms");
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap.getLayers().get("platforms");
 		HEIGHT_IN_TILES = platformLayer.getHeight();
 		WIDTH_IN_TILES = platformLayer.getWidth();
 		TILE_WIDTH = (int) platformLayer.getTileWidth();
@@ -124,8 +117,7 @@ public class Level {
 		int startX = -1, startY = -1, endX = -1, endY = -1;
 		boolean found = false;
 
-		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers()
-				.get("door");
+		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers().get("door");
 		for (int y = 0; y < HEIGHT_IN_TILES; y++) {
 			for (int x = 0; x < WIDTH_IN_TILES; x++) {
 				if (!found) {
@@ -144,13 +136,10 @@ public class Level {
 			}
 		}
 
-		Gdx.app.debug("LEVEL_LOAD", "Door startX = " + startX + ", endX = "
-				+ endX);
-		Gdx.app.debug("LEVEL_LOAD", "Door startY = " + startY + ", endY = "
-				+ endY);
+		Gdx.app.debug("LEVEL_LOAD", "Door startX = " + startX + ", endX = " + endX);
+		Gdx.app.debug("LEVEL_LOAD", "Door startY = " + startY + ", endY = " + endY);
 
-		doorRect = new Rectangle((float) startX, (float) startY,
-				(float) (endX - startX), (float) (endY - startY));
+		doorRect = new Rectangle((float) startX, (float) startY, (float) (endX - startX), (float) (endY - startY));
 	}
 
 	/**
@@ -158,7 +147,7 @@ public class Level {
 	 * not require a call to SpriteBatch.begin().
 	 * 
 	 * @param camera
-	 *            The camera in which to render.
+	 *        The camera in which to render.
 	 */
 	public void renderAll(OrthographicCamera camera) {
 		renderer.setView(camera);
@@ -170,15 +159,14 @@ public class Level {
 	 * "platforms".
 	 * 
 	 * @param camera
-	 *            The camera in which to render.
+	 *        The camera in which to render.
 	 * 
 	 * @param shader
-	 *            The shader program to use to render the platforms. This must
+	 *        The shader program to use to render the platforms. This must
 	 */
 	public void renderPlatforms(OrthographicCamera camera) {
 		renderer.getSpriteBatch().setColor(1.0f, 1.0f, 0.0f, 1.0f);
-		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap
-				.getLayers().get("platforms");
+		TiledMapTileLayer platformLayer = (TiledMapTileLayer) tiledMap.getLayers().get("platforms");
 		renderer.renderTileLayer(platformLayer);
 	}
 
@@ -188,19 +176,17 @@ public class Level {
 	 * calling.
 	 * 
 	 * @param camera
-	 *            The camera in which to render.
+	 *        The camera in which to render.
 	 */
 	public void renderLevel(OrthographicCamera camera) {
 		renderer.setView(camera);
-		TiledMapTileLayer levelLayer = (TiledMapTileLayer) tiledMap.getLayers()
-				.get("level");
+		TiledMapTileLayer levelLayer = (TiledMapTileLayer) tiledMap.getLayers().get("level");
 		renderer.renderTileLayer(levelLayer);
 	}
 
 	public void renderDoor(OrthographicCamera camera) {
 		renderer.setView(camera);
-		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers()
-				.get("door");
+		TiledMapTileLayer doorLayer = (TiledMapTileLayer) tiledMap.getLayers().get("door");
 		renderer.renderTileLayer(doorLayer);
 	}
 
@@ -209,20 +195,19 @@ public class Level {
 	 * ranges. Useful for collision.
 	 * 
 	 * @param sx
-	 *            The starting x tile-coordinate.
+	 *        The starting x tile-coordinate.
 	 * @param sy
-	 *            The starting y tile-coordinate.
+	 *        The starting y tile-coordinate.
 	 * @param ex
-	 *            The ending x tile-coordinate.
+	 *        The ending x tile-coordinate.
 	 * @param ey
-	 *            The ending y tile-coordinate.
+	 *        The ending y tile-coordinate.
 	 * @return An array of tiles, or null if no rects were found.
 	 */
 	public Array<Rectangle> getTilesAsRectArray(int sx, int sy, int ex, int ey) {
 		Array<Rectangle> tiles = new Array<Rectangle>();
 
-		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get(
-				"level");
+		TiledMapTileLayer layer = (TiledMapTileLayer) tiledMap.getLayers().get("level");
 
 		int foundCount = 0;
 

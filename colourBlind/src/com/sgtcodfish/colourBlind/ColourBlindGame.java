@@ -18,6 +18,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.sgtcodfish.colourBlind.systems.CollisionSystem;
+import com.sgtcodfish.colourBlind.systems.FlashlightSystem;
+import com.sgtcodfish.colourBlind.systems.MovementSystem;
+import com.sgtcodfish.colourBlind.systems.PlayerInputSystem;
 
 /**
  * Colour Blind, game entry for Global Game Jam 2014 by the University of
@@ -35,7 +39,7 @@ public class ColourBlindGame implements ApplicationListener {
 	private Level					level			= null;
 	private OrthographicCamera		camera			= null;
 
-	public static final int			LIGHT_SIZE		= 16;
+	public static final float		LIGHT_SIZE		= 8.0f;
 	public static final float		UPSCALE			= 1.0f;
 
 	public static boolean			USE_GLOW		= true;
@@ -86,14 +90,23 @@ public class ColourBlindGame implements ApplicationListener {
 		if (DEBUG) {
 			Gdx.app.setLogLevel(Application.LOG_DEBUG);
 			fpsLogger = new FPSLogger();
-			// ShaderProgram.pedantic = true;
 		} else {
 			Gdx.app.setLogLevel(Application.LOG_NONE);
 		}
 
+		world = new World();
+
+		world.setSystem(new MovementSystem());
+		world.setSystem(new PlayerInputSystem());
+		world.setSystem(new FlashlightSystem());
+		world.setSystem(new CollisionSystem());
+
+		world.initialize();
+
+		world.addEntity(Player.createPlayerEntity(world, player.stand));
+
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
+		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		player = new Player();
 
@@ -131,11 +144,9 @@ public class ColourBlindGame implements ApplicationListener {
 		if (USE_GLOW) {
 			Gdx.app.debug("GLOW_ENABLED", "The glow effect has been enabled.");
 			/* TODO: Change these magic numbers */
-			glowBuffer = new FrameBuffer(Format.RGBA8888, (int) 128, (int) 128,
-					false);
+			glowBuffer = new FrameBuffer(Format.RGBA8888, (int) 128, (int) 128, false);
 
-			blurFBORegion = new TextureRegion(
-					glowBuffer.getColorBufferTexture());
+			blurFBORegion = new TextureRegion(glowBuffer.getColorBufferTexture());
 			blurFBORegion.flip(false, true);
 		}
 	}
@@ -143,7 +154,10 @@ public class ColourBlindGame implements ApplicationListener {
 	@Override
 	public void render() {
 		float deltaTime = Gdx.graphics.getDeltaTime();
+		world.setDelta(deltaTime);
 		SpriteBatch sb = (SpriteBatch) level.renderer.getSpriteBatch();
+
+		world.process();
 
 		if (DEBUG) {
 			if (Gdx.input.isKeyPressed(Keys.F1)) {
@@ -152,13 +166,14 @@ public class ColourBlindGame implements ApplicationListener {
 
 			if (Gdx.input.isKeyPressed(Keys.F10)) {
 				USE_GLOW = !USE_GLOW;
-				Gdx.app.debug("GLOW_CHANGE", "Glow is: "
-						+ (USE_GLOW ? "on." : "off."));
+				Gdx.app.debug("GLOW_CHANGE", "Glow is: " + (USE_GLOW ? "on." : "off."));
 			}
 		}
 
-		if (Gdx.input.isKeyPressed(Keys.F5)) {
-			bgm.toggle();
+		if (USE_SOUND) {
+			if (Gdx.input.isKeyPressed(Keys.F5)) {
+				bgm.toggle();
+			}
 		}
 
 		if (player.update(level, deltaTime)) {
@@ -178,8 +193,7 @@ public class ColourBlindGame implements ApplicationListener {
 			Gdx.gl20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-			camera.setToOrtho(false, glowBuffer.getWidth(),
-					glowBuffer.getHeight());
+			camera.setToOrtho(false, glowBuffer.getWidth(), glowBuffer.getHeight());
 			camera.update();
 			sb.setProjectionMatrix(camera.combined);
 
@@ -210,11 +224,10 @@ public class ColourBlindGame implements ApplicationListener {
 		sb.begin();
 		sb.setShader(colourShader);
 
-		colourShader.setUniformf("flashLightSize", ((float) LIGHT_SIZE / 2.0f));
+		colourShader.setUniformf("flashLightSize", LIGHT_SIZE);
 		colourShader.setUniformf("platform", 1.0f);
 		colourShader.setUniformf("lightCoord", player.position);
-		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f
-				: 0.0f));
+		colourShader.setUniformf("flashLight", (player.isLightOn() ? 1.0f : 0.0f));
 
 		level.renderPlatforms(camera);
 		sb.end();
@@ -225,14 +238,12 @@ public class ColourBlindGame implements ApplicationListener {
 			blurShader.setUniformf("radius", BLUR_RADIUS);
 			blurShader.setUniformf("resolution", player.getPlayerWidth());
 			blurShader.setUniformf("timeVal", deltaTime);
-			blurShader.setUniformf("inputColour", player.getPlayerColour()
-					.toGdxColour());
+			blurShader.setUniformf("inputColour", player.getPlayerColour().toGdxColour());
 			sb.draw(blurFBORegion, player.position.x, player.position.y);
 		} else {
 			sb.setShader(colourShader);
 			colourShader.setUniformf("platform", 0.0f);
-			colourShader.setUniformf("inputColour", player.getPlayerColour()
-					.toGdxColour());
+			colourShader.setUniformf("inputColour", player.getPlayerColour().toGdxColour());
 			player.render(sb);
 		}
 		sb.end();
@@ -268,37 +279,29 @@ public class ColourBlindGame implements ApplicationListener {
 	}
 
 	private void loadShaders() {
-		colourShader = new ShaderProgram(Gdx.files.internal(
-				"data/lights3.glslv").readString(), Gdx.files.internal(
+		colourShader = new ShaderProgram(Gdx.files.internal("data/lights3.glslv").readString(), Gdx.files.internal(
 				"data/lights3.glslf").readString());
 
 		if (colourShader.isCompiled() == false) {
-			throw new GdxRuntimeException(
-					"Failed to compile lights3.glslf/lights3.glslv:\n"
-							+ colourShader.getLog());
+			throw new GdxRuntimeException("Failed to compile lights3.glslf/lights3.glslv:\n" + colourShader.getLog());
 		} else {
 			Gdx.app.debug("LOAD_SHADERS", "Compiled colour shader.");
 
 			if (colourShader.getLog().length() > 0) {
-				Gdx.app.debug("LOAD_SHADERS", "Colour shader log:"
-						+ colourShader.getLog());
+				Gdx.app.debug("LOAD_SHADERS", "Colour shader log:" + colourShader.getLog());
 			}
 		}
 
 		if (USE_GLOW) {
-			blurShader = new ShaderProgram(Gdx.files.internal(
-					"data/lights3.glslv").readString(), Gdx.files.internal(
+			blurShader = new ShaderProgram(Gdx.files.internal("data/lights3.glslv").readString(), Gdx.files.internal(
 					"data/blur.glslf").readString());
 			if (!blurShader.isCompiled()) {
-				throw new GdxRuntimeException(
-						"Failed to compile blur shader:\n"
-								+ blurShader.getLog());
+				throw new GdxRuntimeException("Failed to compile blur shader:\n" + blurShader.getLog());
 			} else {
 				Gdx.app.debug("LOAD_SHADERS", "Compiled blur shader");
 
 				if (blurShader.getLog().length() > 0) {
-					Gdx.app.debug("LOAD_SHADERS", "Blur shader log:"
-							+ blurShader.getLog());
+					Gdx.app.debug("LOAD_SHADERS", "Blur shader log:" + blurShader.getLog());
 				}
 
 				blurShader.begin();
