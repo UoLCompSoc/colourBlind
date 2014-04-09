@@ -5,6 +5,8 @@ import com.artemis.Entity;
 import com.artemis.systems.EntityProcessingSystem;
 
 /**
+ * Checks to see if solid entities are in contact with other solid entities.
+ * 
  * @author Ashley Davis (SgtCoDFish)
  */
 public class CollisionSystem extends EntityProcessingSystem {

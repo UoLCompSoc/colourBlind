@@ -42,14 +42,14 @@ public class FlashlightSystem extends EntityProcessingSystem {
 			if (f.onTime >= f.duration) {
 				Gdx.app.debug(GDX_DEBUG_TAG, f + " time up. Cooldown starting.");
 				f.onTime = Flashlight.NOT_ON;
-				f.cooldown = Flashlight.DEFAULT_COOLDOWN;
+				f.cooldownRemaining = f.cooldown;
 			}
-		} else if (f.cooldown >= 0.0f) {
-			f.cooldown -= delta;
+		} else if (f.cooldownRemaining >= 0.0f) {
+			f.cooldownRemaining -= delta;
 
-			if (f.cooldown <= 0.0f) {
+			if (f.cooldownRemaining <= 0.0f) {
 				Gdx.app.debug(GDX_DEBUG_TAG, f + " finished cooldown.");
-				f.cooldown = Flashlight.NOT_ON;
+				f.cooldownRemaining = Flashlight.NOT_ON;
 			}
 		} else {
 			if (f.flaggedForStart) {

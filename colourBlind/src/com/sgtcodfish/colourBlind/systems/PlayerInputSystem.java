@@ -8,7 +8,9 @@ import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
 import com.sgtcodfish.colourBlind.Player;
 import com.sgtcodfish.colourBlind.components.Coloured;
+import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Flashlight;
+import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
 import com.sgtcodfish.colourBlind.components.Velocity;
 
@@ -17,17 +19,20 @@ import com.sgtcodfish.colourBlind.components.Velocity;
  */
 public class PlayerInputSystem extends EntityProcessingSystem {
 	@Mapper
-	ComponentMapper<PlayerInputListener>	pim;
+	ComponentMapper<PlayerInputListener>	pim	= null;
 	@Mapper
-	ComponentMapper<Velocity>				vm;
+	ComponentMapper<Velocity>				vm	= null;
 	@Mapper
-	ComponentMapper<Flashlight>				fm;
+	ComponentMapper<Flashlight>				fm	= null;
 	@Mapper
-	ComponentMapper<Coloured>				cm;
+	ComponentMapper<Coloured>				cm	= null;
+	@Mapper
+	ComponentMapper<Facing>					fam	= null;
 
 	@SuppressWarnings("unchecked")
 	public PlayerInputSystem() {
-		super(Aspect.getAspectForAll(PlayerInputListener.class, Velocity.class, Flashlight.class, Coloured.class));
+		super(Aspect.getAspectForAll(PlayerInputListener.class, Velocity.class, Flashlight.class, Coloured.class,
+				Facing.class, HumanoidAnimatedSprite.class));
 	}
 
 	public PlayerInputSystem(Aspect aspect) {
@@ -35,7 +40,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	}
 
 	protected void handleJump(Entity e) {
-
+		vm.get(e).velocity.y += Player.JUMP_VELOCITY;
 	}
 
 	/**

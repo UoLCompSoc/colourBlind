@@ -14,28 +14,72 @@ public class Flashlight extends Component {
 	public static final float	DEFAULT_DURATION	= 2.0f;
 	public static final float	DEFAULT_RADIUS		= 8.0f;
 
+	private static final String	DEFAULT_NAME		= "Unnamed Flashlight";
+
 	/** A value is not on (not on cooldown, not turned on) if it is <= NOT_ON. */
 	public static final float	NOT_ON				= -1.0f;
 
-	private String				name				= "Unnamed Flashlight";
+	private String				name				= DEFAULT_NAME;
 
-	public float				cooldown			= NOT_ON;
+	// how long until cooldown is finished
+	public float				cooldownRemaining	= NOT_ON;
+
+	// how long the light has been on for
 	public float				onTime				= NOT_ON;
-	public float				duration			= DEFAULT_COOLDOWN;
+
+	// how long the light takes to cool down
+	public final float			cooldown;
+
+	// how long the light stays on for
+	public final float			duration;
 
 	public boolean				flaggedForStart		= false;
 
+	/**
+	 * Creates a flashlight with a default (not very descriptive) name and
+	 * sensible defaults for cooldown and duration.
+	 */
 	public Flashlight() {
-		this.name = "Unnamed Flashlight";
+		this(DEFAULT_NAME, DEFAULT_DURATION, DEFAULT_COOLDOWN);
 	}
 
 	/**
-	 * Creates a new flashlight with the given name.
+	 * Creates a new flashlight with the given name, and sensible defaults for
+	 * cooldown and duration.
 	 * 
 	 * @param name
 	 *        The descriptive name to give this flashlight.
 	 */
 	public Flashlight(String name) {
+		this(name, DEFAULT_DURATION, DEFAULT_COOLDOWN);
+	}
+
+	/**
+	 * Creates a flashlight with a default (not very descriptive) name and the
+	 * given duration and cooldown.
+	 * 
+	 * @param duration
+	 *        The amount of time the flashlight stays on for.
+	 * @param cooldown
+	 *        The amount of time the flashlight needs to cool down.
+	 */
+	public Flashlight(float duration, float cooldown) {
+		this(DEFAULT_NAME, duration, cooldown);
+	}
+
+	/**
+	 * Creates a flashlight with the given name, duration and cooldown.
+	 * 
+	 * @param name
+	 *        The descriptive name to give this flashlight.
+	 * @param duration
+	 *        The amount of time the flashlight stays on for.
+	 * @param cooldown
+	 *        The amount of time the flashlight needs to cool down.
+	 */
+	public Flashlight(String name, float duration, float cooldown) {
+		this.duration = duration;
+		this.cooldown = cooldown;
 		this.name = name;
 	}
 
@@ -52,14 +96,14 @@ public class Flashlight extends Component {
 	 * @return True if this flashlight can be activated, false otherwise.
 	 */
 	public boolean usable() {
-		return cooldown <= 0.0f;
+		return cooldownRemaining <= 0.0f;
 	}
 
 	/**
 	 * Resets the flashlight to the off position, and makes it usable again.
 	 */
 	public void reset() {
-		cooldown = NOT_ON;
+		cooldownRemaining = NOT_ON;
 		onTime = NOT_ON;
 	}
 

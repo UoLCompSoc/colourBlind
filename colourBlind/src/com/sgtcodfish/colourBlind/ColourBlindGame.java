@@ -103,7 +103,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 		world.initialize();
 
-		world.addEntity(Player.createPlayerEntity(world, player.stand));
+		world.addEntity(Player.createPlayerEntity(world));
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

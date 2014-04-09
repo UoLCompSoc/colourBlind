@@ -4,7 +4,6 @@ import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
@@ -22,6 +21,7 @@ import com.sgtcodfish.colourBlind.components.Flashlight;
 import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
 import com.sgtcodfish.colourBlind.components.Position;
+import com.sgtcodfish.colourBlind.components.Solid;
 import com.sgtcodfish.colourBlind.components.Velocity;
 import com.sgtcodfish.colourBlind.components.Weight;
 
@@ -40,9 +40,8 @@ public class Player {
 	public static final float	GRAVITY							= -0.05f;
 	public static final float	TERMINAL_VELOCITY				= JUMP_VELOCITY;
 
-	private Texture				texture							= null;
-	private int					PLAYER_TEXTURE_WIDTH			= 64;
-	private int					PLAYER_TEXTURE_HEIGHT			= 128;
+	public static int			PLAYER_TEXTURE_WIDTH			= 64;
+	public static int			PLAYER_TEXTURE_HEIGHT			= 128;
 
 	public static final Vector2	INITIAL_POSITION				= new Vector2(3.0f, 2.0f);
 
@@ -57,9 +56,9 @@ public class Player {
 	public Vector2				position						= new Vector2();
 	public Vector2				velocity						= new Vector2();
 
-	public Animation			stand							= null;
-	public Animation			run								= null;
-	public Animation			jump							= null;
+	public static Animation		stand							= null;
+	public static Animation		run								= null;
+	public static Animation		jump							= null;
 
 	private boolean				facingLeft						= false;
 	private boolean				isGrounded						= true;
@@ -86,7 +85,11 @@ public class Player {
 	 *        component.
 	 * @return A player entity with sensible default values for its components.
 	 */
-	public static Entity createPlayerEntity(World world, Animation animation) {
+	public static Entity createPlayerEntity(World world) {
+		if (Player.stand == null || Player.run == null || Player.jump == null) {
+			loadAnimations("data/RaySprites.png");
+		}
+
 		Entity e = world.createEntity();
 
 		e.addComponent(new Position(INITIAL_POSITION));
@@ -96,26 +99,31 @@ public class Player {
 
 		e.addComponent(new Facing());
 		e.addComponent(new Coloured());
-		e.addComponent(new HumanoidAnimatedSprite(stand, run, jump));
+		e.addComponent(new HumanoidAnimatedSprite(Player.stand, Player.run, Player.jump));
 
 		e.addComponent(new Weight());
+		e.addComponent(new Solid());
 
 		e.addComponent(new Flashlight("Player's Flashlight"));
 
 		return e;
 	}
 
-	public Player() {
-		FileHandle playerImage = Gdx.files.internal("data/RaySprites.png");
-		Gdx.app.debug("PLAYER_LOAD", "Player image exists = " + playerImage.exists());
-		texture = new Texture(playerImage);
+	public static void loadAnimations(String fname) {
+		FileHandle playerImage = Gdx.files.internal(fname);
+		Texture texture = new Texture(playerImage);
 		texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
 		TextureRegion[] regions = TextureRegion.split(texture, PLAYER_TEXTURE_WIDTH, PLAYER_TEXTURE_HEIGHT)[0];
-		jump = new Animation(0.0f, regions[3]);
-		stand = new Animation(0.0f, regions[0]);
-		run = new Animation(0.2f, regions[1], regions[2]);
+		Player.jump = new Animation(0.0f, regions[3]);
+		Player.stand = new Animation(0.0f, regions[0]);
+		Player.run = new Animation(0.2f, regions[1], regions[2]);
 		run.setPlayMode(Animation.LOOP_PINGPONG);
+
+		// texture.dispose();
+	}
+
+	public Player() {
 		facingLeft = false;
 
 		PLAYER_WIDTH = (PLAYER_TEXTURE_WIDTH * (1.0f / PLAYER_SCALE_FACTOR));
@@ -169,32 +177,6 @@ public class Player {
 			setPlayerColour(CBColour.GameColour.BLUE);
 		} else if (Gdx.input.isKeyPressed(Keys.L) || Gdx.input.isKeyPressed(Keys.NUM_4)) {
 			setPlayerColour(CBColour.GameColour.YELLOW);
-		}
-
-		if (isLightOn()) {
-			// if light is on, check if it's been on for too long, and turn it
-			// off and start cooldown if it's been on
-			flashLightOnTime += deltaTime;
-
-			if (flashLightOnTime >= FLASHLIGHT_ON_DURATION) {
-				Gdx.app.debug("FLASHLIGHT", "Flashlight time up. Cooldown started.");
-				flashLightOnTime = -1.0f;
-				flashLightCooldown = FLASHLIGHT_COOLDOWN_DURATION;
-			}
-		} else if (isLightOnCooldown()) {
-			// if light is on cooldown, handle in a similar way until it's
-			// cooled off.
-			flashLightCooldown -= deltaTime;
-
-			if (flashLightCooldown < 0.0f) {
-				Gdx.app.debug("FLASHLIGHT", "Flashlight finished cooling down.");
-				flashLightCooldown = 0.0f;
-			}
-		} else if (Gdx.input.isButtonPressed(Buttons.LEFT) || Gdx.input.isKeyPressed(Keys.E)) {
-			// LMB -> Turn on light if we can only get here if not on and not on
-			// cooldown
-			Gdx.app.debug("FLASHLIGHT", "Flashlight turned on.");
-			flashLightOnTime = 0.01f;
 		}
 
 		// handle jumping
@@ -352,8 +334,6 @@ public class Player {
 	}
 
 	public void dispose() {
-		if (texture != null)
-			texture.dispose();
 	}
 
 	public void setPlayerColour(CBColour.GameColour colour) {
