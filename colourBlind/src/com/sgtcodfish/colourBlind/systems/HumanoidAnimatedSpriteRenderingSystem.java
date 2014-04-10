@@ -6,7 +6,7 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.sgtcodfish.colourBlind.components.Coloured;
@@ -24,18 +24,18 @@ import com.sgtcodfish.colourBlind.components.Velocity;
  */
 public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSystem {
 	@Mapper
-	ComponentMapper<HumanoidAnimatedSprite>	hasm	= null;
+	private ComponentMapper<HumanoidAnimatedSprite>	hasm	= null;
 	@Mapper
-	ComponentMapper<Position>				pm		= null;
+	private ComponentMapper<Position>				pm		= null;
 	@Mapper
-	ComponentMapper<Velocity>				vm		= null;
+	private ComponentMapper<Velocity>				vm		= null;
 	@Mapper
-	ComponentMapper<Facing>					fm		= null;
+	private ComponentMapper<Facing>					fm		= null;
 	@Mapper
-	ComponentMapper<Coloured>				cm		= null;
+	private ComponentMapper<Coloured>				cm		= null;
 
-	SpriteBatch								batch	= null;
-	ShaderProgram							program	= null;
+	public Batch									batch	= null;
+	public ShaderProgram							program	= null;
 
 	/**
 	 * Creates a new HumanoidAnimatedSpriteRenderingSystem with the given batch
@@ -52,7 +52,7 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	 *        The shader to use. Must have a uniform called inputColour for the
 	 *        Coloured component.
 	 */
-	protected HumanoidAnimatedSpriteRenderingSystem(Aspect aspect, SpriteBatch batch, ShaderProgram program) {
+	protected HumanoidAnimatedSpriteRenderingSystem(Aspect aspect, Batch batch, ShaderProgram program) {
 		super(aspect);
 		if (batch == null) {
 			throw new IllegalArgumentException(
@@ -78,7 +78,7 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	 *        Coloured component.
 	 */
 	@SuppressWarnings("unchecked")
-	public HumanoidAnimatedSpriteRenderingSystem(SpriteBatch batch, ShaderProgram program) {
+	public HumanoidAnimatedSpriteRenderingSystem(Batch batch, ShaderProgram program) {
 		this(Aspect.getAspectForAll(HumanoidAnimatedSprite.class, Position.class, Velocity.class, Facing.class), batch,
 				program);
 	}

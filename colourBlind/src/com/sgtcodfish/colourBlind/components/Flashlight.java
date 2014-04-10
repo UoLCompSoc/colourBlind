@@ -93,10 +93,25 @@ public class Flashlight extends Component {
 	}
 
 	/**
-	 * @return True if this flashlight can be activated, false otherwise.
+	 * @return True if the light is currently on, false if not.
+	 */
+	public boolean isOn() {
+		return onTime > 0.0f;
+	}
+
+	/**
+	 * @return True if the light is cooling down, false otherwise.
+	 */
+	public boolean isCoolingDown() {
+		return cooldownRemaining > 0.0f;
+	}
+
+	/**
+	 * @return True if this flashlight can be activated, false otherwise. It can
+	 *         be activated if the cooldown is finished and it isn't already on.
 	 */
 	public boolean usable() {
-		return cooldownRemaining <= 0.0f;
+		return !isCoolingDown() && !isOn();
 	}
 
 	/**

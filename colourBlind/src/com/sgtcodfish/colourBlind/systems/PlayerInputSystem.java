@@ -6,15 +6,17 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.Player;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Flashlight;
-import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
 import com.sgtcodfish.colourBlind.components.Velocity;
 
 /**
+ * Handles input for Entities with PlayerInputListener components.
+ * 
  * @author Ashley Davis (SgtCoDFish)
  */
 public class PlayerInputSystem extends EntityProcessingSystem {
@@ -32,7 +34,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	@SuppressWarnings("unchecked")
 	public PlayerInputSystem() {
 		super(Aspect.getAspectForAll(PlayerInputListener.class, Velocity.class, Flashlight.class, Coloured.class,
-				Facing.class, HumanoidAnimatedSprite.class));
+				Facing.class));
 	}
 
 	public PlayerInputSystem(Aspect aspect) {
@@ -87,7 +89,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity which should do the interacting.
 	 */
 	protected void handleUse(Entity e) {
-
+		throw new GdxRuntimeException("PlayerInputSystem.handleUse NYI.");
 	}
 
 	/**
@@ -97,8 +99,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity whose colour is to be changed.
 	 */
 	protected void handleTurnRed(Entity e) {
-		Coloured c = cm.get(e);
-		c.colour = Coloured.COLOUR_RED;
+		cm.get(e).colour = Coloured.COLOUR_RED;
 	}
 
 	/**
@@ -108,8 +109,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity whose colour is to be changed.
 	 */
 	protected void handleTurnBlue(Entity e) {
-		Coloured c = cm.get(e);
-		c.colour = Coloured.COLOUR_BLUE;
+		cm.get(e).colour = Coloured.COLOUR_BLUE;
 	}
 
 	/**
@@ -119,8 +119,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity whose colour is to be changed.
 	 */
 	protected void handleTurnGreen(Entity e) {
-		Coloured c = cm.get(e);
-		c.colour = Coloured.COLOUR_GREEN;
+		cm.get(e).colour = Coloured.COLOUR_GREEN;
 	}
 
 	/**
@@ -130,8 +129,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity whose colour is to be changed.
 	 */
 	protected void handleTurnYellow(Entity e) {
-		Coloured c = cm.get(e);
-		c.colour = Coloured.COLOUR_YELLOW;
+		cm.get(e).colour = Coloured.COLOUR_YELLOW;
 	}
 
 	/**

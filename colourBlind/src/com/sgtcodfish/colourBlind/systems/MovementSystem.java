@@ -6,6 +6,7 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.math.Vector2;
+import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Position;
 import com.sgtcodfish.colourBlind.components.Velocity;
 import com.sgtcodfish.colourBlind.components.Weight;
@@ -14,6 +15,8 @@ import com.sgtcodfish.colourBlind.components.Weight;
  * Very simply handles the movement of entities by adding their velocity to
  * their position, after handling the effects of gravity or any other
  * accelerations.
+ * 
+ * Also handles changing an entitiy's Facing, if it has one.
  * 
  * @author Ashley Davis (SgtCoDFish)
  */
@@ -26,6 +29,8 @@ public class MovementSystem extends EntityProcessingSystem {
 	ComponentMapper<Velocity>	vm		= null;
 	@Mapper
 	ComponentMapper<Weight>		wm		= null;
+	@Mapper
+	ComponentMapper<Facing>		fm		= null;
 
 	@SuppressWarnings("unchecked")
 	public MovementSystem() {
@@ -44,6 +49,11 @@ public class MovementSystem extends EntityProcessingSystem {
 
 		if (w != null) {
 			velocity.y += w.weight * GRAVITY;
+		}
+
+		Facing f = fm.get(e);
+		if (f != null && velocity.x != 0.0f) {
+			f.facingLeft = (velocity.x < 0.0f);
 		}
 
 		position.add(velocity.scl(world.getDelta()));

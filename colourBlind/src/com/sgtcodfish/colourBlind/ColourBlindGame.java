@@ -20,8 +20,10 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.systems.CollisionSystem;
 import com.sgtcodfish.colourBlind.systems.FlashlightSystem;
+import com.sgtcodfish.colourBlind.systems.HumanoidAnimatedSpriteRenderingSystem;
 import com.sgtcodfish.colourBlind.systems.MovementSystem;
 import com.sgtcodfish.colourBlind.systems.PlayerInputSystem;
+import com.sgtcodfish.colourBlind.systems.TiledMapRenderingSystem;
 
 /**
  * Colour Blind, game entry for Global Game Jam 2014 by the University of
@@ -94,17 +96,6 @@ public class ColourBlindGame implements ApplicationListener {
 			Gdx.app.setLogLevel(Application.LOG_NONE);
 		}
 
-		world = new World();
-
-		world.setSystem(new MovementSystem());
-		world.setSystem(new PlayerInputSystem());
-		world.setSystem(new FlashlightSystem());
-		world.setSystem(new CollisionSystem());
-
-		world.initialize();
-
-		world.addEntity(Player.createPlayerEntity(world));
-
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -149,6 +140,19 @@ public class ColourBlindGame implements ApplicationListener {
 			blurFBORegion = new TextureRegion(glowBuffer.getColorBufferTexture());
 			blurFBORegion.flip(false, true);
 		}
+
+		world = new World();
+
+		world.setSystem(new PlayerInputSystem());
+		world.setSystem(new MovementSystem());
+		world.setSystem(new FlashlightSystem());
+		world.setSystem(new CollisionSystem());
+		world.setSystem(new TiledMapRenderingSystem(level.renderer.getSpriteBatch()));
+		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(level.renderer.getSpriteBatch(), colourShader));
+
+		world.initialize();
+
+		world.addEntity(Player.createPlayerEntity(world));
 	}
 
 	@Override
