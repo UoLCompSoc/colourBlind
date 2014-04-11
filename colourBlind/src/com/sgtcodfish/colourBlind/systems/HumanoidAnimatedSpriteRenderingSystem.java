@@ -117,5 +117,6 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 		batch.draw(frame, p.position.x + (facingLeft ? (float) has.width : 0.0f), p.position.y, (float) has.width
 				* (facingLeft ? -1.0f : 1.0f), (float) has.height);
 		batch.end();
+
 	}
 }

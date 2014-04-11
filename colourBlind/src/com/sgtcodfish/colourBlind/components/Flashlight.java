@@ -33,30 +33,34 @@ public class Flashlight extends Component {
 	// how long the light stays on for
 	public final float			duration;
 
+	// the radius of the light when used for checking if a point is illuminated
+	// by the shader.
+	public final float			radius;
+
 	public boolean				flaggedForStart		= false;
 
 	/**
 	 * Creates a flashlight with a default (not very descriptive) name and
-	 * sensible defaults for cooldown and duration.
+	 * sensible defaults for cooldown, radius and duration.
 	 */
 	public Flashlight() {
-		this(DEFAULT_NAME, DEFAULT_DURATION, DEFAULT_COOLDOWN);
+		this(DEFAULT_NAME, DEFAULT_DURATION, DEFAULT_COOLDOWN, DEFAULT_RADIUS);
 	}
 
 	/**
 	 * Creates a new flashlight with the given name, and sensible defaults for
-	 * cooldown and duration.
+	 * cooldown, radius and duration.
 	 * 
 	 * @param name
 	 *        The descriptive name to give this flashlight.
 	 */
 	public Flashlight(String name) {
-		this(name, DEFAULT_DURATION, DEFAULT_COOLDOWN);
+		this(name, DEFAULT_DURATION, DEFAULT_COOLDOWN, DEFAULT_RADIUS);
 	}
 
 	/**
 	 * Creates a flashlight with a default (not very descriptive) name and the
-	 * given duration and cooldown.
+	 * given duration and cooldown, with a sensible default for radius.
 	 * 
 	 * @param duration
 	 *        The amount of time the flashlight stays on for.
@@ -64,11 +68,26 @@ public class Flashlight extends Component {
 	 *        The amount of time the flashlight needs to cool down.
 	 */
 	public Flashlight(float duration, float cooldown) {
-		this(DEFAULT_NAME, duration, cooldown);
+		this(DEFAULT_NAME, duration, cooldown, DEFAULT_RADIUS);
 	}
 
 	/**
-	 * Creates a flashlight with the given name, duration and cooldown.
+	 * Creates a flashlight with a default (not very descriptive) name and the
+	 * given duration, cooldown and radius.
+	 * 
+	 * @param duration
+	 *        The amount of time the flashlight stays on for.
+	 * @param cooldown
+	 *        The amount of time the flashlight needs to cool down.
+	 * @param radius
+	 *        The radius of the light when used in calculations by the shader.
+	 */
+	public Flashlight(float duration, float cooldown, float radius) {
+		this(DEFAULT_NAME, duration, cooldown, radius);
+	}
+
+	/**
+	 * Creates a flashlight with the given name, duration, cooldown and radius.
 	 * 
 	 * @param name
 	 *        The descriptive name to give this flashlight.
@@ -76,10 +95,13 @@ public class Flashlight extends Component {
 	 *        The amount of time the flashlight stays on for.
 	 * @param cooldown
 	 *        The amount of time the flashlight needs to cool down.
+	 * @param radius
+	 *        The radius of the light when used in calculations by the shader.
 	 */
-	public Flashlight(String name, float duration, float cooldown) {
+	public Flashlight(String name, float duration, float cooldown, float radius) {
 		this.duration = duration;
 		this.cooldown = cooldown;
+		this.radius = radius;
 		this.name = name;
 	}
 

@@ -6,6 +6,7 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
@@ -25,6 +26,7 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 	ComponentMapper<TiledRenderable>	trm		= null;
 
 	public Batch						batch	= null;
+	public ShaderProgram				program	= null;
 
 	/**
 	 * Creates a new TiledMapRenderingSystem with the given aspect and batch.
@@ -34,15 +36,24 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 	 *        The aspect to use.
 	 * @param batch
 	 *        The batch to draw to.
+	 * @param program
+	 *        The shader to use, should support rendering platforms.
 	 */
-	public TiledMapRenderingSystem(Aspect aspect, Batch batch) {
+	public TiledMapRenderingSystem(Aspect aspect, Batch batch, ShaderProgram program) {
 		super(aspect);
 
 		if (batch != null) {
 			this.batch = batch;
 		} else {
 			throw new IllegalArgumentException(
-					"Call to TiledMapRenderingSystem(Aspect, Batch) with null batch. Did you use the wrong constructor?");
+					"Call to TiledMapRenderingSystem(Aspect, Batch, ShaderProgram) with null batch. Did you use the wrong constructor?");
+		}
+
+		if (program != null) {
+			this.program = program;
+		} else {
+			throw new IllegalArgumentException(
+					"Call to TiledMapRenderingSystem(Aspect, Batch, ShaderProgram) with null program. Did you use the wrong constructor?");
 		}
 	}
 
@@ -54,17 +65,19 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 	 * 
 	 * @param batch
 	 *        The batch to which the level should be rendered.
+	 * @param program
+	 *        The shader to use, should support rendering platforms.
 	 */
 	@SuppressWarnings("unchecked")
-	public TiledMapRenderingSystem(Batch batch) {
-		this(Aspect.getAspectForAll(TiledRenderable.class, Position.class), batch);
+	public TiledMapRenderingSystem(Batch batch, ShaderProgram program) {
+		this(Aspect.getAspectForAll(TiledRenderable.class, Position.class), batch, program);
 	}
 
 	/**
 	 * Throws an exception, do not use.
 	 */
 	public TiledMapRenderingSystem() {
-		this(null, null);
+		this(null, null, null);
 	}
 
 	@Override
@@ -83,7 +96,7 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 			}
 		}
 
-		batch.setShader(colourShader);
+		batch.setShader(program);
 		t.renderer.renderTileLayer(platformLayer);
 		batch.end();
 

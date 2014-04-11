@@ -1,3 +1,5 @@
+#version 110
+
 #ifdef GL_ES
 #define LOWP lowp
 precision mediump float;
@@ -11,9 +13,9 @@ uniform float flashLight; // 1.0 if the flash light is on, 0.0 otherwise
 uniform float flashLightSize; // the size of the flash light's beam.
 uniform vec2 lightCoord; // coordinates of the light source if the flash light is on
 uniform float platform; // 1.0 if we're drawing platforms, 0.0 otherwise.
+
 uniform vec4 inputColour;
 uniform sampler2D u_texture;
-uniform float bias;
 
 varying vec2 vTexCoord0;
 varying vec4 vColour;
