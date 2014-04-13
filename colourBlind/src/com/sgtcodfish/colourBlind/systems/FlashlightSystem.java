@@ -16,7 +16,10 @@ import com.sgtcodfish.colourBlind.components.Position;
  */
 public class FlashlightSystem extends EntityProcessingSystem {
 	public static final String	GDX_DEBUG_TAG		= "FLASHLIGHT_SYSTEM";
-	/** The maximum number of lights that can be handled by the shader. */
+	/**
+	 * The maximum number of lights that can be handled by the shader. Should be
+	 * synchronized to relevant shaders.
+	 */
 	public static final int		MAX_SHADER_LIGHTS	= 8;
 	/** The number of floats which are needed to describe a flashlight */
 	public static final int		FLASHLIGHT_FLOATS	= 3;
@@ -106,8 +109,8 @@ public class FlashlightSystem extends EntityProcessingSystem {
 	 * "float flashlights[MAX_SHADER_LIGHTS];" which contains the coordinates
 	 * and radii of all the flashlights which are "on" during this tick.
 	 * 
-	 * Also sets a uniform called "lightsOn" which is the number of lights in
-	 * the array, 0 <= lightsOn <= MAX_SHADER_LIGHTS. This should be used to
+	 * Also sets a uniform int called "lightsOn" which is the number of lights
+	 * in the array, 0 <= lightsOn <= MAX_SHADER_LIGHTS. This should be used to
 	 * iterate over the lights.
 	 * 
 	 * @param program
@@ -115,6 +118,6 @@ public class FlashlightSystem extends EntityProcessingSystem {
 	 */
 	public void setupShaderUniform(ShaderProgram program) {
 		program.setUniform3fv("flashlights", lightList, 0, SHADER_ARRAY_SIZE);
-		program.setUniformf("lightsOn", lightsForShader);
+		program.setUniformi("lightsOn", lightsForShader);
 	}
 }

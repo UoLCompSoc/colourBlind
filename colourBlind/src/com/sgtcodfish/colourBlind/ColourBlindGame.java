@@ -147,7 +147,7 @@ public class ColourBlindGame implements ApplicationListener {
 		world.setSystem(new MovementSystem());
 		world.setSystem(new FlashlightSystem());
 		world.setSystem(new CollisionSystem());
-		world.setSystem(new TiledMapRenderingSystem(level.renderer.getSpriteBatch()));
+		world.setSystem(new TiledMapRenderingSystem(level.renderer.getSpriteBatch(), colourShader));
 		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(level.renderer.getSpriteBatch(), colourShader));
 
 		world.initialize();
