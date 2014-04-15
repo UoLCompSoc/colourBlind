@@ -7,17 +7,17 @@ precision mediump float;
 #define LOWP 
 #endif
 
-attribute vec4 a_position; // position of the place we're rendering
+#define FLASHLIGHT_COUNT_MAX 24
+
+attribute vec4 a_position;
 attribute vec4 a_color;
 attribute vec2 a_texCoord0;
 
 uniform mat4 u_projTrans;
-
-uniform float flashLight; // 1.0 if the flash light is on, 0.0 otherwise
-uniform float flashLightSize; // the size of the flash light's beam.
-uniform vec2 lightCoord; // coordinates of the light source if the flash light is on
-uniform float platform; // 1.0 if we're drawing platforms, 0.0 otherwise.
  
+uniform float flashlights[FLASHLIGHT_COUNT_MAX];
+uniform int lightsOn;
+
 varying vec2 vTexCoord0;
 varying vec2 vPosition;
 varying vec4 vColour;

@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.math.Vector2;
 import com.sgtcodfish.colourBlind.components.Position;
 import com.sgtcodfish.colourBlind.components.TiledRenderable;
 
@@ -83,11 +82,14 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 	@Override
 	protected void process(Entity e) {
 		TiledRenderable t = trm.get(e);
-		Vector2 p = pm.get(e).position;
+		// Vector2 p = pm.get(e).position;
 		TiledMapTileLayer platformLayer = null;
 
 		batch.begin();
 		batch.setShader(null);
+
+		// we store the platform layer to be rendered later, with a different
+		// shader.
 		for (MapLayer layer : t.map.getLayers()) {
 			if ("platforms".equals(layer.getName())) {
 				platformLayer = (TiledMapTileLayer) layer;
@@ -97,9 +99,9 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 		}
 
 		batch.setShader(program);
+		world.getSystem(FlashlightSystem.class).setupShaderUniforms(program);
 		t.renderer.renderTileLayer(platformLayer);
 		batch.end();
-
 	}
 
 }

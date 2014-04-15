@@ -116,7 +116,7 @@ public class FlashlightSystem extends EntityProcessingSystem {
 	 * @param program
 	 *        The program whose uniforms will be modified.
 	 */
-	public void setupShaderUniform(ShaderProgram program) {
+	public void setupShaderUniforms(ShaderProgram program) {
 		program.setUniform3fv("flashlights", lightList, 0, SHADER_ARRAY_SIZE);
 		program.setUniformi("lightsOn", lightsForShader);
 	}
