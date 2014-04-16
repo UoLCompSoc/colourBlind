@@ -32,6 +32,11 @@ varying vec2 vPosition;
 void main() {
     vec4 texColour = texture2D(u_texture, vTexCoord0.st);
     
+    if(inputColour.a > 0.0) {
+        gl_FragColor = vec4(inputColour.rgb, texColour.a);
+        return;
+    }
+    
     for(int i = 0; i < lightsOn; i++) {
         vec2 pos = vec2(flashlights[i * FLASHLIGHT_FLOAT_COUNT + 0],
                         flashlights[i * FLASHLIGHT_FLOAT_COUNT + 1]);

@@ -2,12 +2,12 @@ package com.sgtcodfish.colourBlind;
 
 import java.util.ArrayList;
 
+import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -26,33 +26,36 @@ import com.sgtcodfish.colourBlind.systems.TiledMapRenderingSystem;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class ColourBlindGame implements ApplicationListener {
-	private static ColourBlindGame	instance		= null;
-	public static boolean			DEBUG			= false;
+	private static ColourBlindGame	instance			= null;
+	public static boolean			DEBUG				= false;
 
 	// whether or not to use the glow special effect
-	private static boolean			USE_GLOW		= true;
+	@SuppressWarnings("unused")
+	private static boolean			USE_GLOW			= true;
 
 	// note that USE_SOUND is only followed at load-time;
 	// if the game was loaded without sounds you can't start them
-	private static boolean			USE_SOUND		= true;
+	private static boolean			USE_SOUND			= true;
 
-	public World					world			= null;
+	public World					world				= null;
+	private PlayerInputSystem		playerInputSystem	= null;
+	private MovementSystem			movementSystem		= null;
 
-	public static final float		LIGHT_SIZE		= 8.0f;
-	public static final float		UPSCALE			= 1.0f;
+	private PlayerEntityFactory		playerFactory		= null;
+	private Entity					playerEntity		= null;
 
-	private PlayerEntityFactory		playerFactory	= null;
-	private Level					level			= null;
-	private OrthographicCamera		camera			= null;
+	public static final float		LIGHT_SIZE			= 8.0f;
+	public static final float		UPSCALE				= 1.0f;
 
-	private ShaderProgram			colourShader	= null;
+	private Level					level				= null;
+	private OrthographicCamera		camera				= null;
 
-	private int						currentLevel	= 0;
-	private ArrayList<String>		levelList		= null;
+	private ShaderProgram			colourShader		= null;
 
-	private BGM						bgm				= null;
+	private int						currentLevel		= 0;
+	private ArrayList<String>		levelList			= null;
 
-	private FPSLogger				fpsLogger		= null;
+	private BGM						bgm					= null;
 
 	public ColourBlindGame() {
 		this(false, true, false);
@@ -77,7 +80,6 @@ public class ColourBlindGame implements ApplicationListener {
 
 		if (DEBUG) {
 			Gdx.app.setLogLevel(Application.LOG_DEBUG);
-			fpsLogger = new FPSLogger();
 		} else {
 			Gdx.app.setLogLevel(Application.LOG_NONE);
 		}
@@ -120,17 +122,20 @@ public class ColourBlindGame implements ApplicationListener {
 				PlayerEntityFactory.DEFAULT_PLAYER_TEXTURE_WIDTH, PlayerEntityFactory.DEFAULT_PLAYER_TEXTURE_HEIGHT);
 
 		world = new World();
+		playerInputSystem = new PlayerInputSystem();
+		movementSystem = new MovementSystem();
 
-		world.setSystem(new PlayerInputSystem());
-		world.setSystem(new MovementSystem());
+		world.setSystem(playerInputSystem, true);
+		world.setSystem(movementSystem, true);
 		world.setSystem(new FlashlightSystem());
 		world.setSystem(new CollisionSystem());
-		world.setSystem(new TiledMapRenderingSystem(level.renderer.getSpriteBatch(), colourShader));
-		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(level.renderer.getSpriteBatch(), colourShader));
+		world.setSystem(new TiledMapRenderingSystem(camera, level.renderer.getSpriteBatch(), colourShader));
+		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(camera, level.renderer.getSpriteBatch(), colourShader));
 
 		world.initialize();
 
-		world.addEntity(playerFactory.createPlayerEntity(world));
+		playerEntity = playerFactory.createPlayerEntity(world);
+		world.addEntity(playerEntity);
 	}
 
 	@Override
@@ -140,6 +145,9 @@ public class ColourBlindGame implements ApplicationListener {
 
 		Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		playerInputSystem.process();
+		movementSystem.process();
 
 		world.process();
 
@@ -190,6 +198,8 @@ public class ColourBlindGame implements ApplicationListener {
 
 	@Override
 	public void resize(int width, int height) {
+		camera.setToOrtho(false, width, height);
+		camera.update();
 	}
 
 	@Override

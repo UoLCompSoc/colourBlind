@@ -6,7 +6,6 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.PlayerEntityFactory;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
@@ -89,7 +88,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 *        The entity which should do the interacting.
 	 */
 	protected void handleUse(Entity e) {
-		throw new GdxRuntimeException("PlayerInputSystem.handleUse NYI.");
+		// throw new GdxRuntimeException("PlayerInputSystem.handleUse NYI.");
 	}
 
 	/**

@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Flashlight;
+import com.sgtcodfish.colourBlind.components.FocusTaker;
 import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
 import com.sgtcodfish.colourBlind.components.Position;
@@ -44,9 +45,12 @@ public class PlayerEntityFactory {
 	 * 
 	 * @param world
 	 *        The world from which to create the entity.
+	 * @param takesFocus
+	 *        Whether or not this entity should take the focus of the camera. If
+	 *        it should, be mindful that only 1 Entity in total does.
 	 * @return A player entity with sensible default values for its components.
 	 */
-	public Entity createPlayerEntity(World world) {
+	public Entity createPlayerEntity(World world, boolean takesFocus) {
 		if (stand == null || run == null || jump == null) {
 			throw new IllegalArgumentException("Call to createPlayerEntity(World) with uninitiated animations.");
 		}
@@ -55,6 +59,9 @@ public class PlayerEntityFactory {
 
 		e.addComponent(new Position(INITIAL_POSITION));
 		e.addComponent(new Velocity());
+		if (takesFocus) {
+			e.addComponent(new FocusTaker());
+		}
 
 		e.addComponent(new PlayerInputListener());
 
@@ -68,6 +75,19 @@ public class PlayerEntityFactory {
 		e.addComponent(new Flashlight("Player's Flashlight"));
 
 		return e;
+	}
+
+	/**
+	 * Creates an entity with typical components one might expect a player
+	 * character to have, with the default that this entity does not take focus
+	 * of the camera.
+	 * 
+	 * @param world
+	 *        The world from which to create the entity.
+	 * @return A player entity with sensible default values for its components.
+	 */
+	public Entity createPlayerEntity(World world) {
+		return createPlayerEntity(world, false);
 	}
 
 	/**

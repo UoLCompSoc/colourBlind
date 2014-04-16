@@ -2,15 +2,18 @@ package com.sgtcodfish.colourBlind.systems;
 
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
+import com.artemis.ComponentType;
 import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
+import com.sgtcodfish.colourBlind.components.FocusTaker;
 import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.Position;
 import com.sgtcodfish.colourBlind.components.Velocity;
@@ -34,16 +37,19 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	@Mapper
 	private ComponentMapper<Coloured>				cm		= null;
 
+	public OrthographicCamera						camera	= null;
 	public Batch									batch	= null;
 	public ShaderProgram							program	= null;
 
 	/**
-	 * Creates a new HumanoidAnimatedSpriteRenderingSystem with the given batch
-	 * and shader.
+	 * Creates a new HumanoidAnimatedSpriteRenderingSystem with the given
+	 * camera, batch and shader.
 	 * 
 	 * NB: Use the HumanoidAnimatedSpriteRenderingSystem(SpriteBatch) form to
 	 * actually create the system.
 	 * 
+	 * @param camera
+	 *        The camera which described the current view.
 	 * @param aspect
 	 *        The aspect to use for this system.
 	 * @param batch
@@ -52,7 +58,8 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	 *        The shader to use. Must have a uniform called inputColour for the
 	 *        Coloured component.
 	 */
-	protected HumanoidAnimatedSpriteRenderingSystem(Aspect aspect, Batch batch, ShaderProgram program) {
+	protected HumanoidAnimatedSpriteRenderingSystem(Aspect aspect, OrthographicCamera camera, Batch batch,
+			ShaderProgram program) {
 		super(aspect);
 		if (batch == null) {
 			throw new IllegalArgumentException(
@@ -68,9 +75,11 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	}
 
 	/**
-	 * Creates a new HumanoidAnimatedSpriteRenderingSystem with the given batch
-	 * and shader.
+	 * Creates a new HumanoidAnimatedSpriteRenderingSystem with the given
+	 * camera, batch and shader.
 	 * 
+	 * @param camera
+	 *        The camera which described the current view.
 	 * @param batch
 	 *        The batch to which we should render.
 	 * @param shader
@@ -78,16 +87,16 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	 *        Coloured component.
 	 */
 	@SuppressWarnings("unchecked")
-	public HumanoidAnimatedSpriteRenderingSystem(Batch batch, ShaderProgram program) {
-		this(Aspect.getAspectForAll(HumanoidAnimatedSprite.class, Position.class, Velocity.class, Facing.class), batch,
-				program);
+	public HumanoidAnimatedSpriteRenderingSystem(OrthographicCamera camera, Batch batch, ShaderProgram program) {
+		this(Aspect.getAspectForAll(HumanoidAnimatedSprite.class, Position.class, Velocity.class, Facing.class),
+				camera, batch, program);
 	}
 
 	/**
 	 * Will throw an exception, do not use.
 	 */
 	public HumanoidAnimatedSpriteRenderingSystem() {
-		this(null, null, null);
+		this(null, null, null, null);
 	}
 
 	@Override
@@ -100,7 +109,6 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 		has.stateTime += world.getDelta();
 
 		TextureRegion frame = null;
-
 		// calculate state
 		if (v.velocity.y != 0.0f) {
 			frame = has.jump.getKeyFrame(has.stateTime);
@@ -110,6 +118,14 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 			frame = has.stand.getKeyFrame(has.stateTime);
 		}
 
+		// Check if this Entity has a FocusTaker, that is a component indicating
+		// that the camera should follow it.
+		if (e.getComponent(ComponentType.getTypeFor(FocusTaker.class)) != null) {
+			camera.position.x = p.x();
+			camera.position.y = p.y();
+			camera.update();
+		}
+
 		batch.begin();
 		batch.setShader(program);
 		program.setUniformf("inputColour", cm.get(e).colour.toGdxColour());
@@ -117,6 +133,10 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 		batch.draw(frame, p.position.x + (facingLeft ? (float) has.width : 0.0f), p.position.y, (float) has.width
 				* (facingLeft ? -1.0f : 1.0f), (float) has.height);
 		batch.end();
+	}
 
+	@Override
+	protected void begin() {
+		batch.setProjectionMatrix(camera.combined);
 	}
 }

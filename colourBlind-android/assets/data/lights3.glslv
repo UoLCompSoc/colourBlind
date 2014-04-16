@@ -18,6 +18,8 @@ uniform mat4 u_projTrans;
 uniform float flashlights[FLASHLIGHT_COUNT_MAX];
 uniform int lightsOn;
 
+uniform vec4 inputColour;
+
 varying vec2 vTexCoord0;
 varying vec2 vPosition;
 varying vec4 vColour;
