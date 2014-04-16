@@ -1,15 +1,15 @@
 package com.sgtcodfish.colourBlind;
 
-import java.util.ArrayList;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.systems.CollisionSystem;
@@ -30,7 +30,6 @@ public class ColourBlindGame implements ApplicationListener {
 	public static boolean			DEBUG				= false;
 
 	// whether or not to use the glow special effect
-	@SuppressWarnings("unused")
 	private static boolean			USE_GLOW			= true;
 
 	// note that USE_SOUND is only followed at load-time;
@@ -42,18 +41,13 @@ public class ColourBlindGame implements ApplicationListener {
 	private MovementSystem			movementSystem		= null;
 
 	private PlayerEntityFactory		playerFactory		= null;
-	private Entity					playerEntity		= null;
 
-	public static final float		LIGHT_SIZE			= 8.0f;
-	public static final float		UPSCALE				= 1.0f;
+	public Batch					batch				= null;
 
-	private Level					level				= null;
+	private LevelFactory			levelFactory		= null;
 	private OrthographicCamera		camera				= null;
 
 	private ShaderProgram			colourShader		= null;
-
-	private int						currentLevel		= 0;
-	private ArrayList<String>		levelList			= null;
 
 	private BGM						bgm					= null;
 
@@ -86,56 +80,30 @@ public class ColourBlindGame implements ApplicationListener {
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.update();
+		batch = new SpriteBatch();
 
-		levelList = new ArrayList<String>();
-		while (true) {
-			String fname = "level" + (levelList.size() + 1) + ".tmx";
-			String pathName = "data/maps/" + fname;
-			FileHandle fh = Gdx.files.internal(pathName);
-
-			if (fh.exists()) {
-				levelList.add(fname);
-			} else {
-				break;
-			}
-		}
-
-		if (levelList.size() == 0) {
-			throw new GdxRuntimeException("Couldn't load any levels.");
-		}
-
-		Gdx.app.debug("LEVEL_COUNT", "" + levelList.size() + " levels loaded.");
-		level = new Level(levelList.get(currentLevel));
+		levelFactory = new LevelFactory(batch, "data/maps/");
 
 		loadShaders();
-
-		bgm = new BGM();
-		if (USE_SOUND) {
-			bgm.create();
-			Gdx.app.debug("LOAD_SOUND", "Loaded sounds correctly, playing.");
-			bgm.play();
-		} else {
-			Gdx.app.debug("LOAD_SOUND", "Sounds disabled.");
-		}
+		setupSound();
+		setupGlow();
 
 		playerFactory = new PlayerEntityFactory("data/RaySprites.png",
 				PlayerEntityFactory.DEFAULT_PLAYER_TEXTURE_WIDTH, PlayerEntityFactory.DEFAULT_PLAYER_TEXTURE_HEIGHT);
 
 		world = new World();
-		playerInputSystem = new PlayerInputSystem();
-		movementSystem = new MovementSystem();
 
-		world.setSystem(playerInputSystem, true);
-		world.setSystem(movementSystem, true);
+		world.setSystem(new PlayerInputSystem());
+		world.setSystem(new MovementSystem());
 		world.setSystem(new FlashlightSystem());
 		world.setSystem(new CollisionSystem());
-		world.setSystem(new TiledMapRenderingSystem(camera, level.renderer.getSpriteBatch(), colourShader));
-		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(camera, level.renderer.getSpriteBatch(), colourShader));
+		world.setSystem(new TiledMapRenderingSystem(camera, batch, colourShader));
+		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(camera, batch, colourShader));
 
 		world.initialize();
 
-		playerEntity = playerFactory.createPlayerEntity(world);
-		world.addEntity(playerEntity);
+		world.addEntity(playerFactory.createPlayerEntity(world));
 	}
 
 	@Override
@@ -155,16 +123,7 @@ public class ColourBlindGame implements ApplicationListener {
 
 	// returns true to exit
 	public boolean nextLevel() {
-		currentLevel++;
-		if (currentLevel >= levelList.size()) {
-			// we're done
-			return true;
-		} else {
-			level.dispose();
-
-			level = new Level(levelList.get(currentLevel));
-			return false;
-		}
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -177,11 +136,29 @@ public class ColourBlindGame implements ApplicationListener {
 			colourShader.dispose();
 		if (bgm != null)
 			bgm.dispose();
-		if (level != null)
-			level.dispose();
+		if (levelFactory != null)
+			levelFactory.dispose();
 	}
 
-	private void loadShaders() {
+	protected void setupSound() {
+		bgm = new BGM();
+
+		if (USE_SOUND) {
+			bgm.create();
+			Gdx.app.debug("LOAD_SOUND", "Loaded sounds correctly, playing.");
+			bgm.play();
+		} else {
+			Gdx.app.debug("LOAD_SOUND", "Sounds disabled.");
+		}
+	}
+
+	protected void setupGlow() {
+		if (USE_GLOW) {
+			Gdx.app.debug("LOAD_GLOW", "Glow effect enabled.");
+		}
+	}
+
+	protected void loadShaders() {
 		colourShader = new ShaderProgram(Gdx.files.internal("data/lights3.glslv").readString(), Gdx.files.internal(
 				"data/lights3.glslf").readString());
 
@@ -212,9 +189,5 @@ public class ColourBlindGame implements ApplicationListener {
 
 	public static ColourBlindGame getInstance() {
 		return instance;
-	}
-
-	public Level getLevel() {
-		return level;
 	}
 }

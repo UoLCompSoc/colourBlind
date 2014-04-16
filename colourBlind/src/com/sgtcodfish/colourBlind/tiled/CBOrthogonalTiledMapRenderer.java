@@ -31,7 +31,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.sgtcodfish.colourBlind.CBColour;
 import com.sgtcodfish.colourBlind.ColourBlindGame;
-import com.sgtcodfish.colourBlind.Level;
+import com.sgtcodfish.colourBlind.LevelFactory;
 
 public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 	private float[]	vertices	= new float[20];
@@ -57,7 +57,7 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 		final Color batchColor = spriteBatch.getColor();
 		final float color = Color.toFloatBits(batchColor.r, batchColor.g, batchColor.b,
 				batchColor.a * layer.getOpacity());
-		final Level level = ColourBlindGame.getInstance().getLevel();
+		final LevelFactory levelFactory = ColourBlindGame.getInstance();
 
 		final int layerWidth = layer.getWidth();
 		final int layerHeight = layer.getHeight();
@@ -104,7 +104,7 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 					float u2 = region.getU2();
 					float v2 = region.getV();
 
-					CBColour cb = level.getPlatformCellColour(cell);
+					CBColour cb = levelFactory.getPlatformCellColour(cell);
 					if (cb != null) {
 						Color c = cb.toGdxColour();
 						final float platF = Color.toFloatBits(c.r, c.g, c.b, c.a * layer.getOpacity());

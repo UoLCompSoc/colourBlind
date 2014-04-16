@@ -164,7 +164,7 @@ public class PlayerEntityFactory {
 	// * @param deltaTime
 	// * The amount of time since the last frame
 	// */
-	// public boolean update(Level level, float deltaTime) {
+	// public boolean update(LevelFactory level, float deltaTime) {
 	// if (deltaTime == 0.0f) {
 	// return false;
 	// }
