@@ -1,10 +1,14 @@
 #version 110
 
-#ifdef GL_ES
-#define LOWP lowp
+#ifdef GL_ES 
+#define LOW lowp
+#define MED mediump
+#define HIGH highp
 precision mediump float;
 #else
-#define LOWP 
+#define MED
+#define LOW
+#define HIGH
 #endif
 
 #define FLASHLIGHT_FLOAT_COUNT 3

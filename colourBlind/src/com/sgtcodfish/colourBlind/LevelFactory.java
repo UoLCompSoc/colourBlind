@@ -6,12 +6,14 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import com.artemis.Entity;
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.sgtcodfish.colourBlind.tiled.CBOrthogonalTiledMapRenderer;
 
 /**
@@ -67,11 +69,21 @@ public class LevelFactory {
 		FileHandle handle = Gdx.files.internal(levelFolder);
 
 		if (!handle.isDirectory()) {
-			String message = "Non-directory passed to level loader: " + levelFolder;
+			String message = "Non-directory passed to level loader: " + levelFolder + " (maybe OK).";
 			Gdx.app.debug("LOAD_LEVELS", message);
-			throw new IllegalArgumentException(message);
 		}
 
+		if (Gdx.app.getType() == ApplicationType.Desktop) {
+			if (!Gdx.files.isLocalStorageAvailable()) {
+				throw new GdxRuntimeException("No local storage available on desktop. Exiting.");
+			} else {
+				FileHandle localHandle = Gdx.files.local("colourBlind_maps/");
+				localHandle.mkdirs();
+
+				handle.copyTo(localHandle);
+				handle = localHandle;
+			}
+		}
 		FileHandle[] levelHandles = handle.list(".tmx");
 		if (levelHandles.length == 0) {
 			String message = "No levels found in folder: " + levelFolder;

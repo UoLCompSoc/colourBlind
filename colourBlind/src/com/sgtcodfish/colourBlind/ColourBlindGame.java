@@ -83,7 +83,7 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.update();
 		batch = new SpriteBatch();
 
-		levelFactory = new LevelFactory(batch, "data/maps/");
+		levelFactory = new LevelFactory(batch, "data/maps");
 
 		loadShaders();
 		setupSound();
