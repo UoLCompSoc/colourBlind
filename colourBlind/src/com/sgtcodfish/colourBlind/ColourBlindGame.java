@@ -26,30 +26,27 @@ import com.sgtcodfish.colourBlind.systems.TiledMapRenderingSystem;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class ColourBlindGame implements ApplicationListener {
-	private static ColourBlindGame	instance			= null;
-	public static boolean			DEBUG				= false;
+	private static ColourBlindGame	instance		= null;
+	public static boolean			DEBUG			= false;
 
 	// whether or not to use the glow special effect
-	private static boolean			USE_GLOW			= true;
+	private static boolean			USE_GLOW		= true;
 
 	// note that USE_SOUND is only followed at load-time;
 	// if the game was loaded without sounds you can't start them
-	private static boolean			USE_SOUND			= true;
+	private static boolean			USE_SOUND		= true;
 
-	public World					world				= null;
-	private PlayerInputSystem		playerInputSystem	= null;
-	private MovementSystem			movementSystem		= null;
+	public World					world			= null;
+	private PlayerEntityFactory		playerFactory	= null;
 
-	private PlayerEntityFactory		playerFactory		= null;
+	public Batch					batch			= null;
 
-	public Batch					batch				= null;
+	private LevelEntityFactory		levelFactory	= null;
+	private OrthographicCamera		camera			= null;
 
-	private LevelFactory			levelFactory		= null;
-	private OrthographicCamera		camera				= null;
+	private ShaderProgram			colourShader	= null;
 
-	private ShaderProgram			colourShader		= null;
-
-	private BGM						bgm					= null;
+	private BGM						bgm				= null;
 
 	public ColourBlindGame() {
 		this(false, true, false);
@@ -83,7 +80,7 @@ public class ColourBlindGame implements ApplicationListener {
 		camera.update();
 		batch = new SpriteBatch();
 
-		levelFactory = new LevelFactory(batch, "data/maps");
+		levelFactory = new LevelEntityFactory(batch, "data/maps/");
 
 		loadShaders();
 		setupSound();
@@ -104,6 +101,7 @@ public class ColourBlindGame implements ApplicationListener {
 		world.initialize();
 
 		world.addEntity(playerFactory.createPlayerEntity(world));
+		world.addEntity(levelFactory.generateNextLevelEntity(world));
 	}
 
 	@Override
@@ -113,9 +111,6 @@ public class ColourBlindGame implements ApplicationListener {
 
 		Gdx.gl.glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		playerInputSystem.process();
-		movementSystem.process();
 
 		world.process();
 

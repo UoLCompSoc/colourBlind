@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Disposable;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Flashlight;
@@ -25,7 +26,7 @@ import com.sgtcodfish.colourBlind.components.Weight;
  * 
  * @author Ashley Davis (SgtCoDFish)
  */
-public class PlayerEntityFactory {
+public class PlayerEntityFactory implements Disposable {
 	public static int			DEFAULT_PLAYER_TEXTURE_WIDTH	= 64;
 	public static int			DEFAULT_PLAYER_TEXTURE_HEIGHT	= 128;
 
@@ -151,6 +152,7 @@ public class PlayerEntityFactory {
 		loadAnimations(textureFileName, tileWidth, tileHeight);
 	}
 
+	@Override
 	public void dispose() {
 		stand = run = jump = null;
 		if (playerTexture != null) {
@@ -164,7 +166,7 @@ public class PlayerEntityFactory {
 	// * @param deltaTime
 	// * The amount of time since the last frame
 	// */
-	// public boolean update(LevelFactory level, float deltaTime) {
+	// public boolean update(LevelEntityFactory level, float deltaTime) {
 	// if (deltaTime == 0.0f) {
 	// return false;
 	// }

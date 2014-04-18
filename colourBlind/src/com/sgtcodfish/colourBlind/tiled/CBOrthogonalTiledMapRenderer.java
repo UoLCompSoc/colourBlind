@@ -21,43 +21,56 @@ import static com.badlogic.gdx.graphics.g2d.Batch.Y2;
 import static com.badlogic.gdx.graphics.g2d.Batch.Y3;
 import static com.badlogic.gdx.graphics.g2d.Batch.Y4;
 
+import java.util.HashMap;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.sgtcodfish.colourBlind.CBColour;
-import com.sgtcodfish.colourBlind.ColourBlindGame;
-import com.sgtcodfish.colourBlind.LevelFactory;
 
 public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
-	private float[]	vertices	= new float[20];
+	private static final float		DEFAULT_UNIT_SCALE	= 1.0f;
+	private float[]					vertices			= new float[20];
 
-	public CBOrthogonalTiledMapRenderer(TiledMap map) {
-		super(map);
+	private HashMap<Cell, Color>	platformColours		= null;
+
+	public CBOrthogonalTiledMapRenderer(HashMap<Cell, Color> platformColours, TiledMap map) {
+		this(platformColours, map, DEFAULT_UNIT_SCALE, new SpriteBatch());
 	}
 
-	public CBOrthogonalTiledMapRenderer(TiledMap map, Batch batch) {
-		super(map, batch);
+	public CBOrthogonalTiledMapRenderer(HashMap<Cell, Color> platformColours, TiledMap map, Batch batch) {
+		this(platformColours, map, DEFAULT_UNIT_SCALE, batch);
 	}
 
-	public CBOrthogonalTiledMapRenderer(TiledMap map, float unitScale) {
-		super(map, unitScale);
+	public CBOrthogonalTiledMapRenderer(HashMap<Cell, Color> platformColours, TiledMap map, float unitScale) {
+		this(platformColours, map, unitScale, new SpriteBatch());
 	}
 
-	public CBOrthogonalTiledMapRenderer(TiledMap map, float unitScale, Batch batch) {
+	public CBOrthogonalTiledMapRenderer(HashMap<Cell, Color> platformColours, TiledMap map, float unitScale, Batch batch) {
 		super(map, unitScale, batch);
+		if (platformColours == null) {
+			throw new IllegalArgumentException(
+					"Trying to create CBOrthogonalTiledMapRenderer with no platform colours. Did you want a regular OrthogonalTiledMapRenderer?");
+		} else {
+			this.platformColours = platformColours;
+		}
 	}
 
+	/**
+	 * An overridden render function for handling rendering of "coloured"
+	 * platforms which only reveal their colour under a shader-driven
+	 * flashlight.
+	 */
 	@Override
 	public void renderTileLayer(TiledMapTileLayer layer) {
 		final Color batchColor = spriteBatch.getColor();
 		final float color = Color.toFloatBits(batchColor.r, batchColor.g, batchColor.b,
 				batchColor.a * layer.getOpacity());
-		final LevelFactory levelFactory = ColourBlindGame.getInstance();
 
 		final int layerWidth = layer.getWidth();
 		final int layerHeight = layer.getHeight();
@@ -104,10 +117,9 @@ public class CBOrthogonalTiledMapRenderer extends OrthogonalTiledMapRenderer {
 					float u2 = region.getU2();
 					float v2 = region.getV();
 
-					CBColour cb = levelFactory.getPlatformCellColour(cell);
+					Color cb = platformColours.get(cell);
 					if (cb != null) {
-						Color c = cb.toGdxColour();
-						final float platF = Color.toFloatBits(c.r, c.g, c.b, c.a * layer.getOpacity());
+						final float platF = Color.toFloatBits(cb.r, cb.g, cb.b, cb.a * layer.getOpacity());
 						vertices[C1] = platF;
 						vertices[C2] = platF;
 						vertices[C3] = platF;

@@ -1,19 +1,23 @@
 package com.sgtcodfish.colourBlind;
 
 import java.util.ArrayList;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import java.util.HashMap;
 
 import com.artemis.Entity;
+import com.artemis.World;
 import com.badlogic.gdx.Application;
-import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Disposable;
+import com.sgtcodfish.colourBlind.components.Position;
+import com.sgtcodfish.colourBlind.components.TiledRenderable;
 import com.sgtcodfish.colourBlind.tiled.CBOrthogonalTiledMapRenderer;
 
 /**
@@ -22,84 +26,140 @@ import com.sgtcodfish.colourBlind.tiled.CBOrthogonalTiledMapRenderer;
  * 
  * @author Ashley Davis (SgtCoDFish)
  */
-public class LevelFactory {
-	public CBOrthogonalTiledMapRenderer	renderer	= null;
-	public ArrayList<TiledMap>			levels		= null;
+public class LevelEntityFactory implements Disposable {
+	public ArrayList<LevelDetails>	levels			= null;
+
+	private int						currentLevel	= 0;
+	private Batch					batch			= null;
 
 	/**
-	 * Creates a LevelFactory, loading all the levels in the given folder, and a
-	 * renderer with the given batch.
+	 * Creates a LevelEntityFactory, loading all the levels in the given folder,
+	 * and a renderer with the given batch.
 	 * 
 	 * @param batch
 	 *        The {@link Batch} (probably {@link SpriteBatch}) to use to render
 	 *        the level.
 	 * @param levelFolder
-	 *        The folder where the levels for this LevelFactory are located.
+	 *        The folder where the levels for this LevelEntityFactory are
+	 *        located.
 	 */
-	public LevelFactory(Batch batch, String levelFolder) {
+	public LevelEntityFactory(Batch batch, String levelFolder) {
+		this.batch = batch;
+		this.currentLevel = 0;
+
 		loadLevelsFromFolder(levelFolder);
-		renderer = new CBOrthogonalTiledMapRenderer(levels.get(0), batch);
 	}
 
-	protected LevelFactory() {
+	protected LevelEntityFactory() {
 
+	}
+
+	/**
+	 * Called to generate the entity for the next level at the origin. Will
+	 * invalidate the current level and dispose it, and create the next level
+	 * for use.
+	 * 
+	 * @param world
+	 *        The world from which to create the entity. It will <em>not</em> be
+	 *        added to the world.
+	 * 
+	 * @return The next level to be played. If there is no level loaded, the
+	 *         first level will be returned. If there are no further levels,
+	 *         null will be returned.
+	 */
+	public Entity generateNextLevelEntity(World world) {
+		return generateNextLevelEntity(world, 0.0f, 0.0f);
 	}
 
 	/**
 	 * Called to generate the entity for the next level. Will invalidate the
 	 * current level and dispose it, and create the next level for use.
 	 * 
+	 * @param world
+	 *        The world from which to create the entity. It will <em>not</em> be
+	 *        added to the world.
+	 * @param x
+	 *        The x position of the level.
+	 * @param y
+	 *        The y position of the level.
+	 * 
 	 * @return The next level to be played. If there is no level loaded, the
 	 *         first level will be returned. If there are no further levels,
 	 *         null will be returned.
 	 */
-	public Entity generateLevelEntity() {
+	public Entity generateNextLevelEntity(World world, float x, float y) {
+		Entity levelEntity = world.createEntity();
 
-		return null;
+		LevelDetails level = levels.get(currentLevel);
+
+		if (level == null) {
+			return null;
+		} else {
+			levelEntity.addComponent(new Position(x, y));
+			levelEntity.addComponent(new TiledRenderable(level.platformColours, level.map, level.renderer));
+
+			currentLevel++;
+
+			return levelEntity;
+		}
 	}
 
 	/**
 	 * Loads all the levels in a specified folder. For internal use; construct a
-	 * new LevelFactory to load the levels in a new folder.
+	 * new LevelEntityFactory to load the levels in a new folder.
 	 * 
 	 * @param levelFolder
 	 *        The folder containing the level files.
 	 */
 	protected void loadLevelsFromFolder(String levelFolder) {
 		FileHandle handle = Gdx.files.internal(levelFolder);
+		FileHandle[] levelHandles = null;
 
 		if (!handle.isDirectory()) {
-			String message = "Non-directory passed to level loader: " + levelFolder + " (maybe OK).";
+			String message = "Non-directory detected by level loader, attempting to load files from list in: "
+					+ levelFolder;
 			Gdx.app.debug("LOAD_LEVELS", message);
-		}
+			String[] levelNames = handle.readString().split("\n");
+			levelHandles = new FileHandle[levelNames.length];
 
-		if (Gdx.app.getType() == ApplicationType.Desktop) {
-			if (!Gdx.files.isLocalStorageAvailable()) {
-				throw new GdxRuntimeException("No local storage available on desktop. Exiting.");
-			} else {
-				FileHandle localHandle = Gdx.files.local("colourBlind_maps/");
-				localHandle.mkdirs();
+			for (int i = 0; i < levelNames.length; i++) {
+				levelNames[i] = levelFolder + levelNames[i];
+				FileHandle temp = Gdx.files.internal(levelNames[i]);
 
-				handle.copyTo(localHandle);
-				handle = localHandle;
+				if (temp.exists()) {
+					Gdx.app.debug("LOAD_LEVELS", "Found level: " + levelNames[i]);
+					levelHandles[i] = temp;
+				}
 			}
+		} else {
+			Gdx.app.debug("LOAD_LEVELS", "Directory detected, loading from handle.list.");
+			levelHandles = handle.list(".tmx");
 		}
-		FileHandle[] levelHandles = handle.list(".tmx");
+
 		if (levelHandles.length == 0) {
 			String message = "No levels found in folder: " + levelFolder;
 			Gdx.app.debug("LOAD_LEVELS", message);
 			throw new IllegalArgumentException(message);
-		} else {
-			Gdx.app.debug("LOAD_LEVELS", String.valueOf(levelHandles.length) + " levels found in " + levelFolder + ".");
 		}
 
-		levels = new ArrayList<TiledMap>(levelHandles.length);
+		Gdx.app.debug("LOAD_LEVELS", String.valueOf(levelHandles.length) + " levels found in " + levelFolder + ".");
+
+		levels = new ArrayList<LevelDetails>(levelHandles.length);
 		TmxMapLoader loader = new TmxMapLoader();
 
 		for (FileHandle fh : levelHandles) {
 			TiledMap map = loader.load(fh.path());
-			setupPlatformColours(map);
-			levels.add(map);
+
+			if (!isValidLevel(map)) {
+				Gdx.app.debug("LOAD_LEVELS", fh.path() + " is an invalid level format. Skipping.");
+				continue;
+			}
+
+			LevelDetails level = new LevelDetails();
+			level.map = map;
+			level.platformColours = LevelEntityFactory.generatePlatformColours(map);
+			level.renderer = new CBOrthogonalTiledMapRenderer(level.platformColours, level.map, this.batch);
+			levels.add(level);
 		}
 
 		if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
@@ -107,7 +167,7 @@ public class LevelFactory {
 			String delim = ", ";
 
 			for (FileHandle fh : levelHandles) {
-				levelNameDebug += fh.name() + ", ";
+				levelNameDebug += fh.name() + delim;
 			}
 
 			levelNameDebug = levelNameDebug.substring(0, levelNameDebug.length() - delim.length());
@@ -116,29 +176,147 @@ public class LevelFactory {
 	}
 
 	/**
-	 * For internal use: sets up the colours for each distinct platform in a
-	 * level, given as a TiledMap objcet.
+	 * A map is a valid Colour Blind level if it contains at the very least, the
+	 * following layers:
+	 * <ul>
+	 * <li>"level" - Containing solid, unpassable blocks.</li>
+	 * <li>"platforms" - Containing platforms, who have colours assigned and are
+	 * solid if the colliding object's colour matches.</li>
+	 * <li>"door" - Containing the door to the next level.</li>
+	 * </ul>
+	 * 
+	 * This function checks for existance of these layers, with no verbose
+	 * output.
 	 * 
 	 * @param map
-	 *        The map, containing a "platforms" layer, whose platforms will be
-	 *        assigned random colours.
+	 *        The map whose layers are to be checked.
+	 * @return True if the map is a valid CB level, false otherwise.
 	 */
-	protected void setupPlatformColours(TiledMap map) {
-		throw new NotImplementedException();
+	public boolean isValidLevel(TiledMap map) {
+		return isValidLevel(map, false);
 	}
 
-	public void dispose() {
-		if (renderer != null) {
-			renderer.dispose();
+	/**
+	 * A map is a valid Colour Blind level if it contains at the very least, the
+	 * following layers:
+	 * <ul>
+	 * <li>"level" - Containing solid, unpassable blocks.</li>
+	 * <li>"platforms" - Containing platforms, who have colours assigned and are
+	 * solid if the colliding object's colour matches.</li>
+	 * <li>"door" - Containing the door to the next level.</li>
+	 * </ul>
+	 * 
+	 * This function checks for existance of these layers, with optional verbose
+	 * output.
+	 * 
+	 * @param map
+	 *        The map whose layers are to be checked.
+	 * @param verbose
+	 *        Set to true to enable verbose logging output for the check to
+	 *        Gdx.app.debug.
+	 * @return True if the map is a valid CB level, false otherwise.
+	 */
+	public boolean isValidLevel(TiledMap map, boolean verbose) {
+		MapLayers layers = map.getLayers();
+		if (verbose) {
+			Gdx.app.debug("VALID_LEVEL", "Level layer count: " + layers.getCount());
 		}
 
+		boolean levelLayerFound = false, platformsLayerFound = false, doorLayerFound = false;
+
+		for (int i = 0; i < layers.getCount(); i++) {
+			String layerName = layers.get(i).getName();
+			if (verbose) {
+				Gdx.app.debug("VALID_LEVEL", "Layer " + i + " name: " + layerName);
+			}
+
+			if (layerName.equals("level")) {
+				levelLayerFound = true;
+			} else if (layerName.equals("platforms")) {
+				platformsLayerFound = true;
+			} else if (layerName.equals("door")) {
+				doorLayerFound = true;
+			}
+		}
+
+		if (!(levelLayerFound && platformsLayerFound && doorLayerFound)) {
+			if (verbose) {
+				Gdx.app.debug("VALID_LEVEL", "Level layer missing: " + (!levelLayerFound));
+				Gdx.app.debug("VALID_LEVEL", "Platforms layer missing: " + (!platformsLayerFound));
+				Gdx.app.debug("VALID_LEVEL", "Door layer missing: " + (!doorLayerFound));
+			}
+
+			return false;
+		} else {
+			if (verbose) {
+				Gdx.app.debug("VALID_LEVEL", "Map is valid.");
+			}
+
+			return true;
+		}
+	}
+
+	/**
+	 * @return true if this factory has exhausted its list of levels (i.e. a
+	 *         call to generateNextLevelEntity() will return null).
+	 */
+	public boolean isFactoryFinished() {
+		return currentLevel > levels.size();
+	}
+
+	/**
+	 * Generates a color map from cells in the "platforms" layer of a map to
+	 * colours. Connected platforms all receieve the same colour, and each
+	 * platform receives a random colour.
+	 * 
+	 * @param map
+	 *        The map, containing a layer called "platforms",
+	 * @return
+	 */
+	public static HashMap<Cell, Color> generatePlatformColours(TiledMap map) {
+		return null;
+	}
+
+	/**
+	 * Should be called before this object is destroyed. Invalidates references
+	 * to levels in this factory.
+	 */
+	@Override
+	public void dispose() {
 		if (levels != null && !levels.isEmpty()) {
-			for (TiledMap map : levels) {
-				map.dispose();
+			for (LevelDetails level : levels) {
+				level.dispose();
 			}
 
 			levels.clear();
 			levels = null;
+		}
+	}
+
+	/**
+	 * Used internally to store level details.
+	 * 
+	 * @author Ashley Davis (SgtCoDFish)
+	 */
+	private class LevelDetails implements Disposable {
+		public TiledMap						map				= null;
+		public HashMap<Cell, Color>			platformColours	= null;
+		public CBOrthogonalTiledMapRenderer	renderer		= null;
+
+		@Override
+		public void dispose() {
+			if (map != null) {
+				map.dispose();
+				map = null;
+			}
+
+			if (platformColours != null) {
+				platformColours.clear();
+			}
+
+			if (renderer != null) {
+				renderer.dispose();
+			}
 		}
 	}
 
@@ -156,7 +334,7 @@ public class LevelFactory {
 	// * @param levelFileName
 	// * The file name of the level to load.
 	// */
-	// public LevelFactory(String levelFileName) {
+	// public LevelEntityFactory(String levelFileName) {
 	// // needs to be done before we load; ideally it wouldn't be this hacky
 	// // but I want to get it done
 	// platformColourCache = new HashMap<Cell, CBColour>();
