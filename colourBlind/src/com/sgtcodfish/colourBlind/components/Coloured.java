@@ -24,7 +24,7 @@ public class Coloured extends Component {
 	 * Creates the Coloured component in the DEFAULT_COLOUR.
 	 */
 	public Coloured() {
-		this(COLOUR_RED);
+		this(DEFAULT_COLOUR);
 	}
 
 	/**
