@@ -2,6 +2,7 @@ package com.sgtcodfish.colourBlind;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import com.artemis.Entity;
 import com.artemis.World;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
@@ -11,7 +12,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.systems.CollisionSystem;
 import com.sgtcodfish.colourBlind.systems.FlashlightSystem;
 import com.sgtcodfish.colourBlind.systems.HumanoidAnimatedSpriteRenderingSystem;
@@ -39,11 +42,13 @@ public class ColourBlindGame implements ApplicationListener {
 	public World					world			= null;
 	private PlayerEntityFactory		playerFactory	= null;
 
-	public Batch					batch			= null;
-
 	private LevelEntityFactory		levelFactory	= null;
 	private OrthographicCamera		camera			= null;
 
+	private Entity					playerEntity	= null;
+	private Entity					levelEntity		= null;
+
+	public Batch					batch			= null;
 	private ShaderProgram			colourShader	= null;
 
 	private BGM						bgm				= null;
@@ -91,17 +96,30 @@ public class ColourBlindGame implements ApplicationListener {
 
 		world = new World();
 
+		playerEntity = playerFactory.createPlayerEntity(world, true);
+		levelEntity = levelFactory.generateNextLevelEntity(world);
+
+		float playerHeight = (float) PlayerEntityFactory.DEFAULT_PLAYER_TEXTURE_HEIGHT;
+		float numCells = 2.5f; // number of tiles high the player should be when
+								// rendered.
+		float cellHeight = numCells
+				* ((TiledMapTileLayer) levelFactory.getCurrentMap().getLayers().get(0)).getTileHeight();
+		float scalingFactor = 1 / (playerHeight / cellHeight);
+
+		Gdx.app.debug("SCALE_FACTOR", "Player scaling factor set to: " + scalingFactor);
+		playerEntity.getComponent(HumanoidAnimatedSprite.class).setScalingFactor(scalingFactor);
+
 		world.setSystem(new PlayerInputSystem());
 		world.setSystem(new MovementSystem());
 		world.setSystem(new FlashlightSystem());
-		world.setSystem(new CollisionSystem());
+		world.setSystem(new CollisionSystem(levelFactory.getCurrentMap()));
 		world.setSystem(new TiledMapRenderingSystem(camera, batch, colourShader));
 		world.setSystem(new HumanoidAnimatedSpriteRenderingSystem(camera, batch, colourShader));
 
 		world.initialize();
 
-		world.addEntity(playerFactory.createPlayerEntity(world));
-		world.addEntity(levelFactory.generateNextLevelEntity(world));
+		world.addEntity(playerEntity);
+		world.addEntity(levelEntity);
 	}
 
 	@Override

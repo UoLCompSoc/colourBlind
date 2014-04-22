@@ -30,7 +30,7 @@ public class PlayerEntityFactory implements Disposable {
 	public static int			DEFAULT_PLAYER_TEXTURE_WIDTH	= 64;
 	public static int			DEFAULT_PLAYER_TEXTURE_HEIGHT	= 128;
 
-	public static final Vector2	INITIAL_POSITION				= new Vector2(3.0f, 2.0f);
+	public static final Vector2	INITIAL_POSITION				= new Vector2(40.0f, 40.0f);
 	public static final float	JUMP_VELOCITY					= 1.0f;
 	public static final float	RUN_VELOCITY					= 1.0f;
 
@@ -71,7 +71,7 @@ public class PlayerEntityFactory implements Disposable {
 		e.addComponent(new HumanoidAnimatedSprite(stand, run, jump));
 
 		e.addComponent(new Weight());
-		e.addComponent(new Solid());
+		e.addComponent(new Solid(0.0f, 0.0f, DEFAULT_PLAYER_TEXTURE_WIDTH, 5.0f));
 
 		e.addComponent(new Flashlight("Player's Flashlight"));
 
@@ -159,186 +159,4 @@ public class PlayerEntityFactory implements Disposable {
 			playerTexture.dispose();
 		}
 	}
-
-	// /**
-	// * Called each frame to update the position and state of the player
-	// *
-	// * @param deltaTime
-	// * The amount of time since the last frame
-	// */
-	// public boolean update(LevelEntityFactory level, float deltaTime) {
-	// if (deltaTime == 0.0f) {
-	// return false;
-	// }
-	//
-	// stateTime += deltaTime;
-	//
-	// if (Gdx.app.getLogLevel() == Application.LOG_DEBUG) {
-	// if (Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)) {
-	// position.set(PlayerEntityFactory.INITIAL_POSITION);
-	// velocity.set(0.0f, 0.0f);
-	// }
-	//
-	// if (Gdx.input.isKeyPressed(Keys.SHIFT_LEFT)) {
-	// Gdx.app.debug("PLAYER_COORDS", "(X,Y)=(" + position.x + ", " + position.y
-	// + ")");
-	// }
-	// }
-	//
-	// if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP)) {
-	// Rectangle playerRectangle = new Rectangle();
-	// playerRectangle.set(position.x, position.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-	//
-	// if (level.doorRect.contains(playerRectangle)) {
-	// Gdx.app.debug("DOOR_OPENED", "PlayerEntityFactory opened a door!");
-	// return true;
-	// }
-	// }
-	//
-	// // handle colour changes - we default to RED because why not
-	// if (Gdx.input.isKeyPressed(Keys.I) || Gdx.input.isKeyPressed(Keys.NUM_1))
-	// {
-	// setPlayerColour(CBColour.GameColour.RED);
-	// } else if (Gdx.input.isKeyPressed(Keys.J) ||
-	// Gdx.input.isKeyPressed(Keys.NUM_2)) {
-	// setPlayerColour(CBColour.GameColour.GREEN);
-	// } else if (Gdx.input.isKeyPressed(Keys.K) ||
-	// Gdx.input.isKeyPressed(Keys.NUM_3)) {
-	// setPlayerColour(CBColour.GameColour.BLUE);
-	// } else if (Gdx.input.isKeyPressed(Keys.L) ||
-	// Gdx.input.isKeyPressed(Keys.NUM_4)) {
-	// setPlayerColour(CBColour.GameColour.YELLOW);
-	// }
-	//
-	// // handle jumping
-	// if (Gdx.input.isKeyPressed(Keys.SPACE)) {
-	// if (isGrounded) {
-	// velocity.y += JUMP_VELOCITY;
-	// setState(PlayerState.JUMPING);
-	// isGrounded = false;
-	// }
-	// }
-	//
-	// // handle moving left
-	// if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A))
-	// {
-	// velocity.x = -RUN_VELOCITY;
-	//
-	// if (isGrounded) {
-	// setState(PlayerState.RUNNING);
-	// }
-	//
-	// facingLeft = true;
-	// }
-	//
-	// // handle moving right
-	// if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D))
-	// {
-	// velocity.x = RUN_VELOCITY;
-	//
-	// if (isGrounded) {
-	// setState(PlayerState.RUNNING);
-	// }
-	//
-	// facingLeft = false;
-	// }
-	//
-	// velocity.y += GRAVITY;
-	//
-	// // stop if we've clearly stopped running.
-	// if (Math.abs(velocity.x) < 0.1f) {
-	// velocity.x = 0.0f;
-	//
-	// if (isGrounded) {
-	// setState(PlayerState.STANDING);
-	// }
-	// }
-	//
-	// // don't want to fall too ridiculously fast
-	// if (Math.abs(velocity.y) > TERMINAL_VELOCITY) {
-	// velocity.y = Math.signum(velocity.y) * TERMINAL_VELOCITY;
-	// }
-	//
-	// Vector2 ptCoords = new Vector2(position);
-	// ptCoords.add(velocity);
-	//
-	// if (ptCoords.y < 0) {
-	// ptCoords.y = 0;
-	// }
-	//
-	// if (ptCoords.x < 0) {
-	// ptCoords.x = 0;
-	// }
-	//
-	// TiledMapTileLayer levelLayer = (TiledMapTileLayer)
-	// level.renderer.getMap().getLayers().get("level");
-	//
-	// TiledMapTileLayer platformLayer = (TiledMapTileLayer)
-	// level.renderer.getMap().getLayers().get("platforms");
-	//
-	// if (velocity.y > 0.0f) {
-	// ptCoords.y += PLAYER_HEIGHT;
-	// }
-	//
-	// if (velocity.x > 0.0f) {
-	// ptCoords.x += PLAYER_WIDTH;
-	// }
-	//
-	// // check for y collisions
-	// Cell levelCell = levelLayer.getCell((int) (position.x + (PLAYER_WIDTH /
-	// 2)), (int) ptCoords.y);
-	// Cell platformCell = platformLayer.getCell((int) position.x, (int)
-	// ptCoords.y);
-	//
-	// if (levelCell != null) {
-	// // there's something there in the level, so it must be collidable
-	// handleYCollision();
-	// } else if (platformCell != null) {
-	// // check if we collide with this platform
-	// if
-	// (this.getPlayerColour().equals(level.getPlatformCellColour(platformCell)))
-	// {
-	// // if we get here, we collide since colours match
-	// // Gdx.app.debug("PLATFORM_COLLISION",
-	// // "Platform collision detected.");
-	// handleYCollision();
-	// }
-	// }
-	//
-	// levelCell = levelLayer.getCell((int) ptCoords.x, (int) (position.y +
-	// (PLAYER_HEIGHT / 2)));
-	// platformCell = platformLayer.getCell((int) ptCoords.x, (int) position.y);
-	//
-	// if (levelCell != null) {
-	// handleXCollision();
-	// } else if (platformCell != null) {
-	// if
-	// (this.getPlayerColour().equals(level.getPlatformCellColour(platformCell)))
-	// {
-	// handleXCollision();
-	// }
-	// }
-	//
-	// position.add(velocity);
-	// velocity.x *= (RUN_VELOCITY / 10.0f);
-	//
-	// // TODO: Saner bounds checking.
-	// if (position.y < -2.0f) {
-	// position.set(1, 3);
-	// }
-	//
-	// return false;
-	// }
-
-	// private void handleYCollision() {
-	// if (velocity.y < 0.0f) {
-	// isGrounded = true;
-	// }
-	//
-	// velocity.y = 0.0f;
-	// }
-	//
-	// private void handleXCollision() {
-	// velocity.x = 0.0f;
-	// }
 }

@@ -48,7 +48,7 @@ public class MovementSystem extends EntityProcessingSystem {
 		Weight w = wm.get(e);
 
 		if (w != null) {
-			velocity.y += w.weight * GRAVITY;
+			velocity.y -= w.weight * GRAVITY;
 		}
 
 		Facing f = fm.get(e);

@@ -97,11 +97,12 @@ public class TiledMapRenderingSystem extends EntityProcessingSystem {
 	protected void process(Entity e) {
 		TiledRenderable t = trm.get(e);
 
+		t.renderer.setView(camera);
 		batch.begin();
 		batch.setShader(null);
 
 		for (TiledMapTileLayer layer : t.regularLayers) {
-			t.renderer.renderTileLayer((TiledMapTileLayer) layer);
+			t.renderer.renderTileLayer(layer);
 		}
 
 		batch.setShader(program);

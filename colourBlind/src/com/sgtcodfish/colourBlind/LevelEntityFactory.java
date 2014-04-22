@@ -117,9 +117,8 @@ public class LevelEntityFactory implements Disposable {
 		FileHandle[] levelHandles = null;
 
 		if (!handle.isDirectory()) {
-			String message = "Non-directory detected by level loader, attempting to load files from list in: "
-					+ levelFolder;
-			Gdx.app.debug("LOAD_LEVELS", message);
+			Gdx.app.debug("LOAD_LEVELS",
+					"Non-directory detected by level loader, attempting to load files from list in: " + levelFolder);
 			String[] levelNames = handle.readString().split("\n");
 			levelHandles = new FileHandle[levelNames.length];
 
@@ -312,6 +311,16 @@ public class LevelEntityFactory implements Disposable {
 		}
 
 		return colourMap;
+	}
+
+	/**
+	 * Gets the currently used tiled map.
+	 * 
+	 * @return The map which is currently in use, or null if no map is currently
+	 *         in use.
+	 */
+	public TiledMap getCurrentMap() {
+		return levels.get(currentLevel).map;
 	}
 
 	/**

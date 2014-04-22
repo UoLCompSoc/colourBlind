@@ -2,7 +2,6 @@ package com.sgtcodfish.colourBlind.systems;
 
 import com.artemis.Aspect;
 import com.artemis.ComponentMapper;
-import com.artemis.ComponentType;
 import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
@@ -36,6 +35,8 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	private ComponentMapper<Facing>					fm		= null;
 	@Mapper
 	private ComponentMapper<Coloured>				cm		= null;
+	@Mapper
+	private ComponentMapper<FocusTaker>				ftm		= null;
 
 	public OrthographicCamera						camera	= null;
 	public Batch									batch	= null;
@@ -63,13 +64,19 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 		super(aspect);
 		if (batch == null) {
 			throw new IllegalArgumentException(
-					"Initialising HumanoidAnimatedSpriteRenderingSystem with null batch, did you use blank constructor of HumanoidAnimatedSpriteRenderingSystem called.");
+					"Initialising HumanoidAnimatedSpriteRenderingSystem with null batch, did you use blank constructor of HumanoidAnimatedSpriteRenderingSystem?");
 		}
 
 		if (program == null) {
 			Gdx.app.debug("HUMANOID_ANIMATION_SYSTEM", "Warning: humanoid animation system created with null shader.");
 		}
 
+		if (camera == null) {
+			throw new IllegalArgumentException(
+					"Initialising HumanoidAnimatedSpriteRenderingSystem with null camera, did you use blank constructor of HumanoidAnimatedSpriteRenderingSystem?");
+		}
+
+		this.camera = camera;
 		this.batch = batch;
 		this.program = program;
 	}
@@ -120,7 +127,7 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 
 		// Check if this Entity has a FocusTaker, that is a component indicating
 		// that the camera should follow it.
-		if (e.getComponent(ComponentType.getTypeFor(FocusTaker.class)) != null) {
+		if (ftm.get(e) != null) {
 			camera.position.x = p.x();
 			camera.position.y = p.y();
 			camera.update();

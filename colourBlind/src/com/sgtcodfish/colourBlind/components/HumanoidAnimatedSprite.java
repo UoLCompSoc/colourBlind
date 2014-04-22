@@ -11,14 +11,18 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * @author Ashley Davis (SgtCoDFish)
  */
 public class HumanoidAnimatedSprite extends Component {
-	public Animation	stand		= null;
-	public Animation	jump		= null;
-	public Animation	run			= null;
+	public static final float	DEFAULT_SCALING_FACTOR	= 1.0f;
 
-	public float		stateTime	= 0.0f;
+	public Animation			stand					= null;
+	public Animation			jump					= null;
+	public Animation			run						= null;
 
-	public float		width		= 0.0f;
-	public float		height		= 0.0f;
+	public float				stateTime				= 0.0f;
+
+	public float				scalingFactor			= DEFAULT_SCALING_FACTOR;
+
+	public float				width					= 0.0f;
+	public float				height					= 0.0f;
 
 	/**
 	 * The AnimatedSprite(Animation) constructor should always be used, having a
@@ -28,7 +32,8 @@ public class HumanoidAnimatedSprite extends Component {
 	}
 
 	/**
-	 * Initialises the HumanoidAnimatedSprite with user provided animations.
+	 * Initialises the HumanoidAnimatedSprite with user provided animations and
+	 * a non-changing scaling factor.
 	 * 
 	 * @param stand
 	 *        The standing animation.
@@ -38,6 +43,25 @@ public class HumanoidAnimatedSprite extends Component {
 	 *        The jumping animation.
 	 */
 	public HumanoidAnimatedSprite(Animation stand, Animation run, Animation jump) {
+		this(DEFAULT_SCALING_FACTOR, stand, run, jump);
+	}
+
+	/**
+	 * Initialises the HumanoidAnimatedSprite with user provided animations and
+	 * scaling factor.
+	 * 
+	 * @param scaleFactor
+	 *        The scaling factor to apply to this sprite when rendering; a scale
+	 *        factor of 0.5 would correspond to the object being drawn half its
+	 *        size.
+	 * @param stand
+	 *        The standing animation.
+	 * @param run
+	 *        The running animation.
+	 * @param jump
+	 *        The jumping animation.
+	 */
+	public HumanoidAnimatedSprite(float scalingFactor, Animation stand, Animation run, Animation jump) {
 		if (stand == null || run == null || jump == null) {
 			throw new IllegalArgumentException("HumanoidAnimatedSprite must have valid animations in its constructor.");
 		}
@@ -61,5 +85,20 @@ public class HumanoidAnimatedSprite extends Component {
 			throw new IllegalArgumentException(
 					"Discrepancy in sizes of animations in HumanoidAnimatedSprite(Animation, Animation, Animation).");
 		}
+
+		setScalingFactor(scalingFactor);
+	}
+
+	/**
+	 * Sets the object's scaling factor and modifies its width and height
+	 * accordingly.
+	 * 
+	 * @param scalingFactor
+	 *        The new scaling factor to use.
+	 */
+	public void setScalingFactor(float scalingFactor) {
+		this.scalingFactor = scalingFactor;
+		this.width *= this.scalingFactor;
+		this.height *= this.scalingFactor;
 	}
 }
