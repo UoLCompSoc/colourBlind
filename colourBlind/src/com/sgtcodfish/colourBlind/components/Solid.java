@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class Solid extends Component {
 	public final Rectangle	rect;
+	public boolean			grounded	= false;
 
 	/**
 	 * Constructs a new Solid component with the specified dimensions of the

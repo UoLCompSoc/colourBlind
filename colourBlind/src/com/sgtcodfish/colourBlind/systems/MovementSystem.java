@@ -56,6 +56,16 @@ public class MovementSystem extends EntityProcessingSystem {
 			f.facingLeft = (velocity.x < 0.0f);
 		}
 
-		position.add(velocity.scl(world.getDelta()));
+		velocity.x *= 0.75f;
+
+		if (Math.abs(velocity.x) < 0.25f) {
+			velocity.x = 0.0f;
+		}
+
+		if (Math.abs(velocity.y) < 0.25f) {
+			velocity.y = 0.0f;
+		}
+
+		position.add(velocity);
 	}
 }

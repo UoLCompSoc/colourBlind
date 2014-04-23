@@ -15,6 +15,7 @@ import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.FocusTaker;
 import com.sgtcodfish.colourBlind.components.HumanoidAnimatedSprite;
 import com.sgtcodfish.colourBlind.components.Position;
+import com.sgtcodfish.colourBlind.components.Solid;
 import com.sgtcodfish.colourBlind.components.Velocity;
 
 /**
@@ -37,6 +38,8 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 	private ComponentMapper<Coloured>				cm		= null;
 	@Mapper
 	private ComponentMapper<FocusTaker>				ftm		= null;
+	@Mapper
+	private ComponentMapper<Solid>					sm		= null;
 
 	public OrthographicCamera						camera	= null;
 	public Batch									batch	= null;
@@ -111,13 +114,19 @@ public class HumanoidAnimatedSpriteRenderingSystem extends EntityProcessingSyste
 		HumanoidAnimatedSprite has = hasm.get(e);
 		Position p = pm.get(e);
 		Velocity v = vm.get(e);
+		Solid s = sm.get(e);
+
 		boolean facingLeft = fm.get(e).facingLeft;
+		boolean drawJumping = false;
+		boolean grounded = (s != null ? s.grounded : false);
 
 		has.stateTime += world.getDelta();
 
+		drawJumping = (v.velocity.y != 0.0f ? true : !grounded);
+
 		TextureRegion frame = null;
 		// calculate state
-		if (v.velocity.y != 0.0f) {
+		if (drawJumping) {
 			frame = has.jump.getKeyFrame(has.stateTime);
 		} else if (v.velocity.x != 0.0f) {
 			frame = has.run.getKeyFrame(has.stateTime);

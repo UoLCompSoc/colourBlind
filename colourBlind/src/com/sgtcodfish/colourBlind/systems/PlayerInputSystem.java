@@ -6,11 +6,13 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Vector2;
 import com.sgtcodfish.colourBlind.PlayerEntityFactory;
 import com.sgtcodfish.colourBlind.components.Coloured;
 import com.sgtcodfish.colourBlind.components.Facing;
 import com.sgtcodfish.colourBlind.components.Flashlight;
 import com.sgtcodfish.colourBlind.components.PlayerInputListener;
+import com.sgtcodfish.colourBlind.components.Solid;
 import com.sgtcodfish.colourBlind.components.Velocity;
 
 /**
@@ -29,6 +31,8 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	ComponentMapper<Coloured>				cm	= null;
 	@Mapper
 	ComponentMapper<Facing>					fam	= null;
+	@Mapper
+	ComponentMapper<Solid>					sm	= null;
 
 	@SuppressWarnings("unchecked")
 	public PlayerInputSystem() {
@@ -41,7 +45,20 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	}
 
 	protected void handleJump(Entity e) {
-		vm.get(e).velocity.y += PlayerEntityFactory.JUMP_VELOCITY;
+		Vector2 v = vm.get(e).velocity;
+		Solid s = sm.get(e);
+
+		if (v.y == 0.0f) {
+			if (s != null) {
+				if (!s.grounded) {
+					return;
+				} else {
+					s.grounded = false;
+				}
+			}
+
+			vm.get(e).velocity.y = PlayerEntityFactory.JUMP_VELOCITY;
+		}
 	}
 
 	/**
@@ -52,7 +69,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 */
 	protected void handleMoveLeft(Entity e) {
 		Velocity v = vm.get(e);
-		v.velocity.x -= PlayerEntityFactory.RUN_VELOCITY;
+		v.velocity.x = -PlayerEntityFactory.RUN_VELOCITY;
 	}
 
 	/**
@@ -63,7 +80,7 @@ public class PlayerInputSystem extends EntityProcessingSystem {
 	 */
 	protected void handleMoveRight(Entity e) {
 		Velocity v = vm.get(e);
-		v.velocity.x += PlayerEntityFactory.RUN_VELOCITY;
+		v.velocity.x = +PlayerEntityFactory.RUN_VELOCITY;
 	}
 
 	/**

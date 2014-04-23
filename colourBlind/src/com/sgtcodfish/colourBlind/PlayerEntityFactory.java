@@ -30,9 +30,9 @@ public class PlayerEntityFactory implements Disposable {
 	public static int			DEFAULT_PLAYER_TEXTURE_WIDTH	= 64;
 	public static int			DEFAULT_PLAYER_TEXTURE_HEIGHT	= 128;
 
-	public static final Vector2	INITIAL_POSITION				= new Vector2(40.0f, 40.0f);
-	public static final float	JUMP_VELOCITY					= 1.0f;
-	public static final float	RUN_VELOCITY					= 1.0f;
+	public static final Vector2	INITIAL_POSITION				= new Vector2(32.0f, 32.0f);
+	public static final float	JUMP_VELOCITY					= 32.0f;
+	public static final float	RUN_VELOCITY					= 32.0f;
 
 	public Texture				playerTexture					= null;
 
